@@ -89,6 +89,13 @@
       - [Generalization and its boundaries](#generalization-and-its-boundaries)
       - [Generalization and accuracy](#generalization-and-accuracy)
     - [Cross-validation - manual separation](#cross-validation---manual-separation)
+    - [Cross-validation - scikitlearn](#cross-validation---scikitlearn)
+      - [Why an 80/20 split?](#why-an-8020-split)
+      - [HUGE dataset - 98/1/1 split](#huge-dataset---9811-split)
+    - [Cross-validation - DataLoader](#cross-validation---dataloader)
+      - [Same architecture, different batch size](#same-architecture-different-batch-size)
+    - [Spliting data into train, devset, and test](#spliting-data-into-train-devset-and-test)
+    - [Cross-validation on regression](#cross-validation-on-regression)
 
 ## Math, numpy, PyTorch
 
@@ -936,3 +943,418 @@ Have examples from those populations in the training/hold-out/test sets.
 - How to implement cross-validation `manually` using numpy.
 - How to perform cross-validation on the iris dataset classification problem.
 
+[DUDL_overfitting_manual.ipynb](../overfitting/DUDL_overfitting_manual.ipynb)
+
+다음은 단순하게 비율로 학습용 데이터셋과 테스트용 데이터셋을 분리하는 예제이다.
+
+```py
+#  (no devset here)
+
+# how many training examples
+propTraining = .8 # in proportion, not percent
+nTraining = int(len(labels)*propTraining)
+
+# initialize a boolean vector to select data and labels
+traintestBool = np.zeros(len(labels),dtype=bool)
+
+# is this the correct way to select samples?
+traintestBool[range(nTraining)] = True
+
+# this is better, but why?
+# items2use4train = np.random.choice(range(len(labels)),nTraining,replace=False)
+# traintestBool[items2use4train] = True
+
+traintestBool
+```
+
+전체 데이터를 분포를 고려하지 않고 그냥 비율로 잘라버렸다.
+
+```text
+array([ True,  True,  True,  True,  True,  True,  True,  True,  True,
+        True,  True,  True,  True,  True,  True,  True,  True,  True,
+        True,  True,  True,  True,  True,  True,  True,  True,  True,
+        True,  True,  True,  True,  True,  True,  True,  True,  True,
+        True,  True,  True,  True,  True,  True,  True,  True,  True,
+        True,  True,  True,  True,  True,  True,  True,  True,  True,
+        True,  True,  True,  True,  True,  True,  True,  True,  True,
+        True,  True,  True,  True,  True,  True,  True,  True,  True,
+        True,  True,  True,  True,  True,  True,  True,  True,  True,
+        True,  True,  True,  True,  True,  True,  True,  True,  True,
+        True,  True,  True,  True,  True,  True,  True,  True,  True,
+        True,  True,  True,  True,  True,  True,  True,  True,  True,
+        True,  True,  True,  True,  True,  True,  True,  True,  True,
+        True,  True,  True, False, False, False, False, False, False,
+       False, False, False, False, False, False, False, False, False,
+       False, False, False, False, False, False, False, False, False,
+       False, False, False, False, False, False])
+```
+
+```py
+# test whether it's balanced
+print('Average of full data:')
+print( torch.mean(labels.float()) ) # =1 by definition
+print(' ')
+
+print('Average of training data:')
+print( torch.mean(labels[traintestBool].float()) ) # should be 1...
+print(' ')
+
+print('Average of test data:')
+print( torch.mean(labels[~traintestBool].float()) ) # should also be 1...
+```
+
+```text
+Average of full data:
+tensor(1.)
+ 
+Average of training data:
+tensor(0.7500)
+ 
+Average of test data:
+tensor(2.)
+```
+
+여기서 학습용 데이터의 평균값이 1이 아니어서 골고루 분산되어 있지 않다.
+
+다음은 랜덤하게 학습용과 테스트용 데이터셋을 분리하는 코드이다.
+
+```py
+#  (no devset here)
+
+# how many training examples
+propTraining = .8 # in proportion, not percent
+nTraining = int(len(labels)*propTraining)
+
+# initialize a boolean vector to select data and labels
+traintestBool = np.zeros(len(labels),dtype=bool)
+
+# is this the correct way to select samples?
+# traintestBool[range(nTraining)] = True
+
+# this is better, but why?
+items2use4train = np.random.choice(range(len(labels)),nTraining,replace=False)
+traintestBool[items2use4train] = True
+
+traintestBool
+```
+
+```text
+array([ True, False,  True,  True,  True,  True, False,  True,  True,
+       False,  True,  True,  True,  True, False,  True,  True,  True,
+        True,  True, False,  True,  True,  True,  True,  True,  True,
+       False, False,  True,  True,  True,  True,  True,  True, False,
+        True,  True,  True,  True,  True,  True,  True,  True,  True,
+       False, False, False,  True,  True,  True,  True,  True,  True,
+       False, False, False,  True, False,  True,  True,  True,  True,
+       False,  True, False,  True,  True, False,  True,  True,  True,
+        True,  True,  True,  True,  True, False,  True,  True,  True,
+        True,  True,  True,  True,  True,  True,  True, False,  True,
+        True, False,  True, False,  True,  True,  True,  True,  True,
+        True,  True,  True,  True,  True,  True,  True, False,  True,
+        True,  True,  True,  True, False,  True,  True,  True,  True,
+        True,  True,  True, False,  True,  True, False,  True, False,
+        True,  True,  True,  True,  True, False,  True,  True,  True,
+        True,  True,  True,  True,  True,  True, False,  True,  True,
+        True,  True, False,  True,  True,  True])
+```
+
+```py
+# test whether it's balanced
+print('Average of full data:')
+print( torch.mean(labels.float()) ) # =1 by definition
+print(' ')
+
+print('Average of training data:')
+print( torch.mean(labels[traintestBool].float()) ) # should be 1...
+print(' ')
+
+print('Average of test data:')
+print( torch.mean(labels[~traintestBool].float()) ) # should also be 1...
+```
+
+```text
+verage of full data:
+tensor(1.)
+ 
+Average of training data:
+tensor(1.0250)
+ 
+Average of test data:
+tensor(0.9000)
+```
+
+학습용 데이터의 평균값이 1에 근접하므로 골고루 분산되어 있다고 할 수 있다.
+
+You learned more about cross-validation and the practical implementation of cross-validation, including the importance of randomly sampling your data to include in the training set versus the test set.
+
+### Cross-validation - scikitlearn
+
+- Learn how to implement cross-validation using scikitlearn.
+- Perform a parametric experiment with the fraction of train/test items.
+
+#### Why an 80/20 split?
+
+General idea: Have as much training data as possible, while still have enough holdout and test data.
+
+How much is `enough`?
+
+Depends on the data, model architecture, generalizability, etc.
+
+#### HUGE dataset - 98/1/1 split
+
+![](.md/README.md/2023-05-31-21-55-03.png)
+
+- 98% training: 14,055,151
+- 1% devset: 141,971
+- 1% test: 141,971
+
+[DUDL_overfitting_scikitlearn.ipynb](../overfitting/DUDL_overfitting_scikitlearn.ipynb)
+
+```py
+fakedata = np.tile(np.array([1,2,3,4]),(10,1)) + np.tile(10*np.arange(1,11),(4,1)).T
+fakelabels = np.arange(10)>4
+print(fakedata), print(' ')
+print(fakelabels)
+
+# [[ 11  12  13  14]
+#  [ 21  22  23  24]
+#  [ 31  32  33  34]
+#  [ 41  42  43  44]
+#  [ 51  52  53  54]
+#  [ 61  62  63  64]
+#  [ 71  72  73  74]
+#  [ 81  82  83  84]
+#  [ 91  92  93  94]
+#  [101 102 103 104]]
+#
+# [False False False False False  True  True  True  True  True]
+
+# use scikitlearn to split the data
+train_data,test_data, train_labels,test_labels = \
+                        train_test_split(fakedata, fakelabels, test_size=.2)
+
+# NOTE the third input parameter above.
+# This can be specified as test size or training size.
+# Be mindful of which parameter is written!
+```
+
+```text
+Training data size: (8, 4)
+Test data size: (2, 4)
+ 
+Training data: 
+[[ 71  72  73  74]
+ [ 21  22  23  24]
+ [101 102 103 104]
+ [ 41  42  43  44]
+ [ 11  12  13  14]
+ [ 31  32  33  34]
+ [ 91  92  93  94]
+ [ 81  82  83  84]]
+ 
+Test data: 
+[[51 52 53 54]
+ [61 62 63 64]]
+```
+
+### Cross-validation - DataLoader
+
+- Yet another way to implement cross-validation, using scikitlearn and torch.
+- about the DataLoader and Dataset pytorch objects.
+- A bit about batches, which are important for speeding up learning and decreasing computation time!
+
+![](.md/README.md/2023-05-31-23-34-26.png)
+
+#### Same architecture, different batch size
+
+![](.md/README.md/2023-05-31-23-35-35.png)
+
+[DUDL_overfitting_dataLoader.ipynb](../overfitting/DUDL_overfitting_dataLoader.ipynb)
+
+```py
+# import libraries
+import torch
+import torch.nn as nn
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+
+# new!
+from torch.utils.data import DataLoader
+
+# create our fake dataset
+fakedata = np.tile(np.array([1,2,3,4]),(10,1)) + np.tile(10*np.arange(1,11),(4,1)).T
+fakelabels = np.arange(10)>4
+print(fakedata), print(' ')
+print(fakelabels)
+
+# [[ 11  12  13  14]
+#  [ 21  22  23  24]
+#  [ 31  32  33  34]
+#  [ 41  42  43  44]
+#  [ 51  52  53  54]
+#  [ 61  62  63  64]
+#  [ 71  72  73  74]
+#  [ 81  82  83  84]
+#  [ 91  92  93  94]
+#  [101 102 103 104]]
+ 
+# [False False False False False  True  True  True  True  True]
+
+# we need to create a Dataset that contains the data and labels
+fakeDataset = torch.utils.data.TensorDataset(torch.Tensor(fakedata),torch.Tensor(fakelabels))
+print( fakeDataset.tensors ), print(' ')
+
+# then create another DataLoader
+fakedataLdr = DataLoader(fakeDataset, shuffle=True)
+
+# iterate through the data
+for dat,lab in fakedataLdr:
+  print(dat,lab)
+
+# (tensor([[ 11.,  12.,  13.,  14.],
+#         [ 21.,  22.,  23.,  24.],
+#         [ 31.,  32.,  33.,  34.],
+#         [ 41.,  42.,  43.,  44.],
+#         [ 51.,  52.,  53.,  54.],
+#         [ 61.,  62.,  63.,  64.],
+#         [ 71.,  72.,  73.,  74.],
+#         [ 81.,  82.,  83.,  84.],
+#         [ 91.,  92.,  93.,  94.],
+#         [101., 102., 103., 104.]]), tensor([0., 0., 0., 0., 0., 1., 1., 1., 1., 1.]))
+ 
+# tensor([[91., 92., 93., 94.]]) tensor([1.])
+# tensor([[31., 32., 33., 34.]]) tensor([0.])
+# tensor([[71., 72., 73., 74.]]) tensor([1.])
+# tensor([[41., 42., 43., 44.]]) tensor([0.])
+# tensor([[61., 62., 63., 64.]]) tensor([1.])
+# tensor([[51., 52., 53., 54.]]) tensor([0.])
+# tensor([[81., 82., 83., 84.]]) tensor([1.])
+# tensor([[101., 102., 103., 104.]]) tensor([1.])
+# tensor([[21., 22., 23., 24.]]) tensor([0.])
+# tensor([[11., 12., 13., 14.]]) tensor([0.])
+
+# use scikitlearn to split the data
+train_data,test_data, train_labels,test_labels = train_test_split(fakedata, fakelabels, test_size=.2)
+
+# then convert them into PyTorch Datasets
+train_data = torch.utils.data.TensorDataset(
+     torch.Tensor(train_data),torch.Tensor(train_labels))
+
+test_data = torch.utils.data.TensorDataset(
+     torch.Tensor(test_data),torch.Tensor(test_labels))
+
+# finally, translate into dataloader objects
+# notice the batches (see next cell)!
+train_loader = DataLoader(train_data,batch_size=4)
+test_loader  = DataLoader(test_data)
+
+# examine the contents of the dataloader (batching is an advantage of dataloader!)
+print('TRAINING DATA')
+for batch,label in train_loader: # iterable
+  print(batch,label)
+  print(' ')
+
+
+print(' ')
+print('TESTING DATA')
+for batch,label in test_loader: # iterable
+  print(batch,label)
+  print(' ')
+
+# TRAINING DATA
+# tensor([[81., 82., 83., 84.],
+#         [21., 22., 23., 24.],
+#         [11., 12., 13., 14.],
+#         [31., 32., 33., 34.]]) tensor([1., 0., 0., 0.])
+ 
+# tensor([[ 51.,  52.,  53.,  54.],
+#         [ 61.,  62.,  63.,  64.],
+#         [101., 102., 103., 104.],
+#         [ 41.,  42.,  43.,  44.]]) tensor([0., 1., 1., 0.])
+ 
+ 
+# TESTING DATA
+# tensor([[91., 92., 93., 94.]]) tensor([1.])
+ 
+# tensor([[71., 72., 73., 74.]]) tensor([1.])
+```
+
+```py
+# train the model
+
+# global parameter
+numepochs = 500
+
+def trainTheModel():
+
+  # initialize accuracies as empties (not storing losses here)
+  trainAcc = []
+  testAcc  = []
+
+  # loop over epochs
+  for epochi in range(numepochs):
+
+
+    # loop over training data batches
+    batchAcc = []
+    for X,y in train_loader:
+
+      # forward pass and loss
+      yHat = ANNiris(X)
+      loss = lossfun(yHat,y)
+      
+      # backprop
+      optimizer.zero_grad()
+      loss.backward()
+      optimizer.step()
+
+      # compute training accuracy just for this batch
+      batchAcc.append( 100*torch.mean((torch.argmax(yHat,axis=1) == y).float()).item() )
+    # end of batch loop...
+
+
+    # now that we've trained through the batches, get their average training accuracy
+    trainAcc.append( np.mean(batchAcc) )
+
+    # test accuracy
+    X,y = next(iter(test_loader)) # extract X,y from test dataloader
+    predlabels = torch.argmax( ANNiris(X),axis=1 )
+    testAcc.append( 100*torch.mean((predlabels == y).float()).item() )
+  
+  # function output
+  return trainAcc,testAcc
+```
+
+### Spliting data into train, devset, and test
+
+- Have a reminder about the difference between devset (aka hold-out) and test.
+- Learn how to partition the data into these three sets manually and in scikitlearn.
+
+[DUDL_overfitting_trainDevsetTest.ipynb](../overfitting/DUDL_overfitting_trainDevsetTest.ipynb)
+
+```py
+# specify sizes of the partitions
+# order is train,devset,test
+partitions = [.8,.1,.1]
+
+# split the data (note the third input, and the TMP in the variable name)
+train_data,testTMP_data, train_labels,testTMP_labels = \
+                   train_test_split(fakedata, fakelabels, train_size=partitions[0])
+
+# now split the TMP data
+split = partitions[1] / np.sum(partitions[1:])
+devset_data,test_data, devset_labels,test_labels = \
+              train_test_split(testTMP_data, testTMP_labels, train_size=split)
+```
+
+### Cross-validation on regression
+
+- See another example of cross-validation using the regression data from the previous section
+- Gain more experience with DL.
+
+[DUDL_overfitting_regression.ipynb](../overfitting/DUDL_overfitting_regression.ipynb)
+
+![](.md/README.md/2023-06-01-04-01-13.png)
+
+![](.md/README.md/2023-06-01-04-01-25.png)
