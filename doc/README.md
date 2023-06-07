@@ -96,6 +96,42 @@
       - [Same architecture, different batch size](#same-architecture-different-batch-size)
     - [Spliting data into train, devset, and test](#spliting-data-into-train-devset-and-test)
     - [Cross-validation on regression](#cross-validation-on-regression)
+  - [Regularization](#regularization)
+    - [Regularization: concept and methods](#regularization-concept-and-methods)
+      - [Why regularize?](#why-regularize)
+      - [Three families of regularizer (in DL)](#three-families-of-regularizer-in-dl)
+      - [Node regularization](#node-regularization)
+      - [Loss regularization](#loss-regularization)
+    - [Data regularization](#data-regularization)
+      - [How to think about regularization](#how-to-think-about-regularization)
+      - [Which regularization method to use?](#which-regularization-method-to-use)
+    - [train() and eval() modes](#train-and-eval-modes)
+      - [Training vs. evaluation mode](#training-vs-evaluation-mode)
+      - [The recommended way to do it](#the-recommended-way-to-do-it)
+    - [Dropout Regularization](#dropout-regularization)
+      - [Dropout regularization: how it works](#dropout-regularization-how-it-works)
+      - [Dropout regularization: what it does](#dropout-regularization-what-it-does)
+      - [Dropout: Scenes from the original paper](#dropout-scenes-from-the-original-paper)
+    - [Dropout regularization in practice](#dropout-regularization-in-practice)
+    - [Dropout example 2](#dropout-example-2)
+    - [Weight Regularization (L2/L2): math](#weight-regularization-l2l2-math)
+      - [Recap: The goal of DL algorithms](#recap-the-goal-of-dl-algorithms)
+      - [What to regularize for?](#what-to-regularize-for)
+      - [The difference between L1 and L2](#the-difference-between-l1-and-l2)
+      - [How much to regularize?](#how-much-to-regularize)
+      - [What else to regularize for?](#what-else-to-regularize-for)
+      - [Why does regularization reduce overfitting?](#why-does-regularization-reduce-overfitting)
+      - [When to use L1/L2 regularization?](#when-to-use-l1l2-regularization)
+    - [L2 regularization in practice](#l2-regularization-in-practice)
+    - [L1 regularization in practice](#l1-regularization-in-practice)
+    - [Training in mini-batches](#training-in-mini-batches)
+      - [What is a mini-batch?](#what-is-a-mini-batch)
+      - [How and why to train with mini-batches?](#how-and-why-to-train-with-mini-batches)
+      - [Why does batch-training regularize?](#why-does-batch-training-regularize)
+      - [Mini-batch analogy](#mini-batch-analogy)
+    - [Batch training in action](#batch-training-in-action)
+    - [The importance of equal batch sizes](#the-importance-of-equal-batch-sizes)
+    - [CodeChallenge: Effects of mini-batch size](#codechallenge-effects-of-mini-batch-size)
 
 ## Math, numpy, PyTorch
 
@@ -1358,3 +1394,678 @@ devset_data,test_data, devset_labels,test_labels = \
 ![](.md/README.md/2023-06-01-04-01-13.png)
 
 ![](.md/README.md/2023-06-01-04-01-25.png)
+
+## Regularization
+
+### Regularization: concept and methods
+
+- The motivation for reuularization
+- The three families of regularization methods
+- How to think about regularization.
+
+#### Why regularize?
+
+Regularization
+
+- Penalizes memorization (over-learning examples)
+- Helps the model generalize to unseen examples
+- Changes the representations of learning (either more sparse or more distributed depending on the regularizer)
+
+Other observations
+
+- Can increase or decrease training time.
+- Can decrease training accuracy but increase generalization.
+- Works better for large models with multiple hidden layers
+- Generally works better with sufficent data.
+
+#### Three families of regularizer (in DL)
+
+Family 1: Modify the model (drop out).
+
+Family 2: Add a cost to the loss function (L1/2).
+
+Family 3: Modify or add data (batch training, data augmentation, normalization).
+
+---
+
+Node regularization: Modify the model (dropout).
+
+Loss regularization: Add a cost to the loss function (L1/2).
+
+Data regularization: Modify or add data (batch training, data augmentation, normalization)
+
+#### Node regularization
+
+![](.md/README.md/2023-06-01-21-32-58.png)
+
+> Nobody really understands exactly why dropout works, but it does work really well.
+
+#### Loss regularization
+
+![](.md/README.md/2023-06-01-21-35-14.png)
+
+> `Something(L1/2)` makes sure that the weights are staying in a reasonable range that's relatively close to zero.
+
+### Data regularization
+
+![](.md/README.md/2023-06-01-21-40-13.png)
+
+> The idea is that we are changing or modifying the data in order to produce a larger dataset.
+
+Now, when you're doing this, when you're doing data augmentation, you have to keep in mind the discussion.
+
+We had several videos ago about cross-validation and selecting training and test data to be orthogonal to each other.
+
+If you used this for the training data and these images for the test data, that is not really an orthogonal split because these images are correlated with this image.
+
+I've just manipulated the pixel values somewhat.
+
+OK, nonetheless, data augmentation is a super popular and very powerful way of increasing the size of your training set for deep learning models in particular.
+
+This is really mostly used in CNN.
+
+#### How to think about regularization
+
+Adds a cost to the complexity of the solution.
+
+Forces the solution to be smooth.
+
+Prevents the model from learning item-specific details.
+
+![](.md/README.md/2023-06-01-21-43-09.png)
+
+#### Which regularization method to use?
+
+Some general guidelines for when to use which method.
+
+Oftentimes the best method is problem- or architecture-specific.
+
+In many cases, different regularization methods work equally well.
+
+![](.md/README.md/2023-06-01-21-46-09.png)
+
+The main point that I wanted to illustrate to you from this particular figure is that not including any regularization led to worse performance and these five different methods of regularization, all improved performance significantly, but they were all roughly equally comparably good.
+
+So this is something you will also find that sometimes any regularization is better than no regularization.
+
+And exactly which regularization method you use may not matter quite as much.
+
+### train() and eval() modes
+
+- Learn about training and evaluation modes of models in PyTorch.
+- Understand the order in which to activation and deactivate training mode.
+
+#### Training vs. evaluation mode
+
+Gradients are computed only during backprop, not during evalution.
+
+Some regularization methods (drop out and batch normalization) are applied only during training, not during evaluation.
+
+Ergo: We need a way to deactivate gradient computations and regularization while evaluating model performance.
+
+|net.train()|net.eval()|torch.no_grad()|
+|--|--|--|
+|Training mode|Testing mode|Used in testing mode|
+|Regularization active|Regularization off|Gardients not computed|
+|Necessary for training regularization, on by default.|Necessary when evaluating models with regularization (dropout and batch normalization)|Never necessary, makes large models evaluate faster.|
+
+#### The recommended way to do it
+
+![](.md/README.md/2023-06-01-22-01-29.png)
+
+No grad just turns off some unnecessary computations related to keeping track of the gradients.
+
+Again, this code is never necessary, but when you start working with larger, more complex models, it's going to speed up the computation time by not making a bunch of computations that don't actually need to be implemented.
+
+### Dropout Regularization
+
+- Learn more about the mechanism and implications and dropout regularization.
+
+#### Dropout regularization: how it works
+
+![](.md/README.md/2023-06-01-22-05-09.png)
+
+![](.md/README.md/2023-06-01-22-06-34.png)
+
+Now, in reality, in practice, how this actually works is the units are not actually dropped out of the model.
+
+Instead, their output, their activation is forced to be zero.
+
+![](.md/README.md/2023-06-01-22-07-01.png)
+
+We don't drop out any of the nodes during testing, during evaluation or testing.
+
+Now this is actually problematic because here we have fewer units overall in the model that are active.
+
+And so that means that the overall activation, the overall input, for example, into this unit is going to be smaller because here there's only two units that are contributing to the activation of the input in this unit, whereas here during evaluation, there are actually four inputs four units that are providing inputs into this specific unit here.
+
+So that means that the overall input is going to be higher during testing compared to during training.
+
+So this is the problem.
+
+We need to fix this and therefore a solution.
+
+One solution to resolving this issue is that during test, we multiply all of these weights by `one minus p` so that scaling down the weights according to the probability of dropping those weights.
+
+![](.md/README.md/2023-06-01-22-13-44.png)
+
+So here there's only two units that are contributing to this unit, 
+
+![](.md/README.md/2023-06-01-22-06-34.png)
+
+but during testing, there are four units.
+
+![](.md/README.md/2023-06-01-22-13-44.png)
+
+However, each of these four units, individually, the weights individually are scaled down by, you know, in this case, point five or whatever is the probability of dropping.
+
+So that means that the overall magnitude of the input from each of these units into this unit is going to decrease.
+
+But the overall amount of input, the overall magnitude of the input into this unit is going to be the same during training and during testing.
+
+Now this is one way to deal with these scaling issues by scaling down the input strength from the weights during evaluation.
+
+Or there's an alternative method that we can use, which is effectively the same, but we just turn the procedure around backwards.
+
+![](.md/README.md/2023-06-01-22-21-30.png)
+
+So during training, we scale all of the weights that are present.
+
+You know, the weights that are not present are scaled by zero, of course.
+
+But the weights that are present are the nodes that are present have their weights, so their contributions scaled by Q and Q is.
+
+Basically, the inverse of P, so this means we are scaling up the weights of the weights get larger.
+
+Right?
+
+Imagine, you know, so I'd gave the numerical example of P equals zero point five.
+
+So that means that this would be two.
+
+So now these weights get multiplied by a factor of two.
+
+And that accounts for the overall decrease of the input into the nodes here in this layer.
+
+And then that means because we're scaling up during training, we no longer scaled down during testing.
+
+![](.md/README.md/2023-06-01-22-23-19.png)
+
+So you can see there's two different ways of doing it.
+
+They're effectively the same.
+
+There isn't a practical difference between them as long as one of those two methods is applied.
+
+We don't have a problem.
+
+Now it turns out that PyTorch implements this second method, so PyTorch scales the weights up during training, and then it does not apply a scaling factor during testing.
+
+---
+
+Dropout reduces the overall activation (fewer elements in the weighted sums).
+
+Solutions:
+
+1. Scale up the weights during training (PyTorch)
+2. Scale down the weights during testing
+
+#### Dropout regularization: what it does
+
+Effects
+
+- Prevents a single node from learning too much.
+- Forces the model to have distributed representations.
+- Makes the model less reliant on individual nodes and thus more stable.
+
+Other observations
+
+- Generally requires more training (though each epoch computes faster).
+- Can decrease training accuracy but increase generalization.
+- Usually works better on deep and shallow networks.
+- Debate about applying it to convolution layers (see CNN section).
+- Works better with sufficient data, unnecessary with enough data
+
+#### Dropout: Scenes from the original paper
+
+I want to show you a couple of screenshots from the first paper that discussed dropout regularization.
+
+![](.md/README.md/2023-06-01-22-34-12.png)
+
+![](.md/README.md/2023-06-01-22-36-18.png)
+
+![](.md/README.md/2023-06-02-00-59-52.png)
+
+![](.md/README.md/2023-06-02-01-01-10.png)
+
+[DUDL_regular_dropoutInPytorch.ipynb](../regularization/DUDL_regular_dropoutInPytorch.ipynb)
+
+### Dropout regularization in practice
+
+- Learn how to implement dropout in pytorch
+- Run a parametric experiment on dropout rates
+- Learn how to smooth a rugged accuracy function
+- See that dropoup isn't always good!
+
+![](.md/README.md/2023-06-02-01-15-45.png)
+
+I wanted us to have a data set that is not linearly separable.
+
+So there is no straight line that you can draw through this graph that will separate the blue squares from the black dots.
+
+There is only a tiny little bit of overfitting. The training data is only a little bit more accurate than the test data.
+
+[DUDL_regular_dropout.ipynb](../regularization/DUDL_regular_dropout.ipynb)
+
+```py
+class theModelClass(nn.Module):
+  def __init__(self,dropoutRate):
+    super().__init__()
+
+    ### layers
+    self.input  = nn.Linear(  2,128)
+    self.hidden = nn.Linear(128,128)
+    self.output = nn.Linear(128, 1)
+
+    # parameters
+    self.dr = dropoutRate
+
+  # forward pass
+  def forward(self,x):
+
+    # pass the data through the input layer
+    x = F.relu( self.input(x) )
+
+    # dropout after input layer
+    x = F.dropout(x,p=self.dr,training=self.training) # training=self.training means to turn off during eval mode
+    
+    # pass the data through the hidden layer
+    x = F.relu( self.hidden(x) )
+
+    # dropout after hidden layer
+    x = F.dropout(x,p=self.dr,training=self.training) # training=self.training means to turn off during eval mode
+    
+    # output layer
+    x = self.output(x)
+    # no dropout here!!
+    return x
+```
+
+![](.md/README.md/2023-06-03-23-39-34.jpeg)
+
+All right, so let's have a look at the results, so what we see here is the drop out proportion going from zero up to one as a function of the model accuracy or I say the accuracy as a function of drop proportion.
+
+The blue line corresponds to the train data and the orange line corresponds to the test data.
+
+So you can see the most striking thing is that accuracy for both train and test goes down as out goes up.
+
+And in fact, the best performance was with zero drop out.
+
+So no drop out at all actually gave the best results.
+
+So that's pretty striking.
+
+It's a good example of how regularization can be powerful and deep learning, but is not always beneficial.
+
+And by the way, you know, I set these figure sizes to look good on my screen when I'm normally typing, which is something like this.
+
+But when I zoom in for the recording, then these sizes are no longer appropriate.
+
+You should feel free to change this big size parameter that controls the size, the width and the height of the figure.
+
+So you can change this to make it look good on your computer screen with your resolution and so on.
+
+![](.md/README.md/2023-06-03-23-39-35.jpeg)
+
+So what you see here is this is just a plot of the difference between train and test.
+
+So this is a measure of generalization error in the data.
+
+So ideally, in the model performance, ideally we would want all of these values to be around zero, which would indicate that there is no generalization problem.
+
+The model does as well on training and test, and when the numbers here are positive and larger, that means that we're doing better on train than on test, which means we have an overfitting problem.
+
+The model is overfitting to the training data.
+
+### Dropout example 2
+
+- Another example of dropout regularization, using the iris dataset.
+- Another example with dropout probability on performance.
+
+[DUDL_regular_dropout_example2.ipynb](../regularization/DUDL_regular_dropout_example2.ipynb)
+
+![](.md/README.md/2023-06-04-23-07-09.png)
+
+![](.md/README.md/2023-06-04-23-07-24.png)
+
+So, in fact, we started off without any dropout.
+
+The model was already doing really well.
+
+But as we added more and more dropout, the model got worse.
+
+So the picture that we're starting to get from the previous video and this video is that dropout regularization can actually be detrimental.
+
+And this is related to a couple of points that I mentioned a few videos ago where I said that dropout regularisation is generally not a good idea for simple models or small models.
+
+It's also generally not a good idea when you don't have a huge amount of data.
+
+So if you have a relatively small data set, then drop out and other forms of regularization as well might not be such a good thing to include.
+
+Now, you will see examples later on in the course where including dropout actually had a really noticeable positive effect.
+
+### Weight Regularization (L2/L2): math
+
+- The math of L1/L2 regularization.
+- How loss regularization prevents overfitting.
+
+#### Recap: The goal of DL algorithms
+
+![](.md/README.md/2023-06-04-23-18-52.png)
+
+#### What to regularize for?
+
+![](.md/README.md/2023-06-04-23-21-10.png)
+
+![](.md/README.md/2023-06-04-23-27-44.png)
+
+#### The difference between L1 and L2
+
+One axis is W and the other axis.
+
+The Y axis will be the addition of this regularization term to the cost function.
+
+![](.md/README.md/2023-06-04-23-34-25.png)
+
+The idea is that the weights are going to shrink, but the large weights are going to shrink a lot more.
+
+And the small weights maybe, you know, they might not even shrink at all.
+
+![](.md/README.md/2023-06-04-23-37-42.png)
+
+This is actually just the absolute value of the weight term. So that means the slope of this line is the same everywhere.
+
+![](.md/README.md/2023-06-04-23-44-24.png)
+
+#### How much to regularize?
+
+![](.md/README.md/2023-06-04-23-50-46.png)
+
+1. Regularize as little as possible and as much as necessary.
+2. Decide based on previous models and cross-validation.
+
+#### What else to regularize for?
+
+Other possibilities:
+
+- L1 + L2 (`elastic net` regression)
+- Norm of weight matrix (more later in the course)
+- Sample-specific (e.g., positive bias on cancer diagnosis)
+
+#### Why does regularization reduce overfitting?
+
+Discourages complex and sample-specific representations.
+
+Prevents overfitting to training examples.
+
+Large weights lead to instability (very different outputs for similar inputs)
+
+#### When to use L1/L2 regularization?
+
+- In large, complex models with lots of weights (high risk of overfitting)
+- Use L1 when trying to understand the important encoding features (more common in regression than DL)
+- When training accuracy is much higher that validation accuracy.
+
+You can also use weights regularization if you find that you're training.
+
+Accuracy is too much higher than the validation or the test accuracy.
+
+When this sort of thing happens at training, accuracy is relatively high compared to the validation accuracy that can indicate that the model is memorising the training examples.
+
+And so adding a weight regularisation will prevent the model from memorisation.
+
+### L2 regularization in practice
+
+- How to implement L2 regularization in PyTorch.
+
+[DUDL_regular_L2regu.ipynb](../regularization/DUDL_regular_L2regu.ipynb)
+
+```py
+# a function that creates the ANN model
+
+def createANewModel(L2lambda):
+
+  # model architecture
+  ANNiris = nn.Sequential(
+      nn.Linear(4,64),   # input layer
+      nn.ReLU(),         # activation unit
+      nn.Linear(64,64),  # hidden layer
+      nn.ReLU(),         # activation unit
+      nn.Linear(64,3),   # output units
+        )
+
+  # loss function
+  lossfun = nn.CrossEntropyLoss()
+
+  # optimizer
+  optimizer = torch.optim.SGD(ANNiris.parameters(),lr=.005,weight_decay=L2lambda)
+
+  return ANNiris,lossfun,optimizer
+```
+
+![](.md/README.md/2023-06-05-11-11-02.png)
+
+![](.md/README.md/2023-06-05-11-11-15.png)
+
+![](.md/README.md/2023-06-05-11-11-25.png)
+
+And you can see that we get kind of a similar picture in some sense that the L2 regularization certainly isn't really helping model performance, but whether it's actually hurting or not within this range,
+
+maybe it actually does go up a little bit here.
+
+Well, I think you get the idea it's not super duper clear in this case because we have a relatively simple model and we don't have a lot of data.
+
+However, the main point of this video is to show you how to implement L to regularization.
+
+### L1 regularization in practice
+
+- How to implement L1 regularization in PyTorch.
+- More about the `guts` of a DL network and how to access the weights and biases
+
+[DUDL_regular_L1regu.ipynb](../regularization/DUDL_regular_L1regu.ipynb)
+
+```py
+# train the model
+
+# global parameter
+numepochs = 1000
+
+def trainTheModel(L1lambda):
+
+  # initialize accuracies as empties
+  trainAcc = []
+  testAcc  = []
+  losses   = []
+
+  # count the total number of weights in the model
+  nweights = 0
+  for pname,weight in ANNiris.named_parameters():
+    if 'bias' not in pname:
+      nweights = nweights + weight.numel()
+
+
+  # loop over epochs
+  for epochi in range(numepochs):
+
+    # loop over training data batches
+    batchAcc  = []
+    batchLoss = []
+    for X,y in train_loader:
+
+      # forward pass and loss
+      yHat = ANNiris(X)
+      loss = lossfun(yHat,y)
+
+
+
+      ### add L1 term
+      L1_term = torch.tensor(0.,requires_grad=True)
+
+      # sum up all abs(weights)
+      for pname,weight in ANNiris.named_parameters():
+        if 'bias' not in pname:
+           L1_term = L1_term + torch.sum(torch.abs(weight))
+      
+      # add to loss term
+      loss = loss + L1lambda*L1_term/nweights
+      
+
+
+      # backprop
+      optimizer.zero_grad()
+      loss.backward()
+      optimizer.step()
+
+      # compute training accuracy just for this batch
+      batchAcc.append( 100*torch.mean((torch.argmax(yHat,axis=1) == y).float()).item() )
+      batchLoss.append( loss.item() )
+    # end of batch loop...
+
+    # now that we've trained through the batches, get their average training accuracy
+    trainAcc.append( np.mean(batchAcc) )
+    losses.append( np.mean(batchLoss) )
+
+    # test accuracy
+    X,y = next(iter(test_loader)) # extract X,y from test dataloader
+    predlabels = torch.argmax( ANNiris(X),axis=1 )
+    testAcc.append( 100*torch.mean((predlabels == y).float()).item() )
+  
+  # function output
+  return trainAcc,testAcc,losses
+```
+
+![](.md/README.md/2023-06-05-11-24-41.png)
+
+![](.md/README.md/2023-06-05-11-24-51.png)
+
+![](.md/README.md/2023-06-05-11-25-00.png)
+
+One thing I'd like to stress, which I mentioned in a previous video, is that Regularisation doesn't always have a positive impact on relatively simple models and relatively small data sets.
+
+### Training in mini-batches
+
+- What batches and mini-batches are in DL
+- Why training in mini-batches can be helpful
+- How batch-training is a form of regularization
+
+#### What is a mini-batch?
+
+![](.md/README.md/2023-06-05-20-47-42.png)
+
+![](.md/README.md/2023-06-05-20-48-58.png)
+
+![](.md/README.md/2023-06-05-20-49-38.png)
+
+#### How and why to train with mini-batches?
+
+Batch size is often powers-of-2 (e.g., 2^4]16), between 2 and 512.
+
+Training in batches can decrease computation time because of vectorization (matrix multiiplication instead of for-loops).
+
+But batching can increase computation time for large batches and large data samples (e.g., images).
+
+Batching is a form of regularization: It smooths learning by averaging the loss over many samples, and thereby recues overfitting.
+
+If samples are highly similar, minibatch=1 can give faster training.
+
+#### Why does batch-training regularize?
+
+![](.md/README.md/2023-06-05-20-56-33.png)
+
+Stochastic gradient descent might take a trajectory that looks something like this.
+
+Now, why doesn't it just go straight down?
+
+Well, that's because the the lost function for each individual sample, each individual data point might take us in a weird direction.
+
+And that's just the nature of random sampling.
+
+![](.md/README.md/2023-06-05-20-57-46.png)
+
+In contrast, if we use mini batches, then rather than computing the loss function of just one single data sample at a time, we are averaging over, let's say, 20 or 30 samples.
+
+So that's going to smooth out a lot of these rough edges here and get us a nice cleaner trajectory with fewer steps to get to the center of this, which is the minimum of the error function.
+
+#### Mini-batch analogy
+
+Imagine you take an exam with 100 questions.
+
+SGD: Teacher gives you detailed feedback on each answer. This is good for learning but very time consuming.
+
+One batch: Teacher gives you a final exam score with no feedback. Grading is fast, but it's difficult to learn from your mistake.
+
+Mini-batch: Teacher gives you a seperate grade and feedback on average performance of blocks of 10 questions. This balances speed and learning ability.
+
+### Batch training in action
+
+- How to implement mini-batches in PyTorch.
+
+[DUDL_regular_minibatch.ipynb](../regularization/DUDL_regular_minibatch.ipynb)
+
+![](.md/README.md/2023-06-05-21-13-27.png)
+
+![](.md/README.md/2023-06-05-21-13-41.png)
+
+Now, I mentioned this briefly in the slides in the in the previous video that if your data set is pretty homogenous, if the data are pretty similar to each other, then the model can really learn a lot from each individual sample.
+
+And therefore, when you have a lot of similarity in the training set, it's actually good to have a small mini batch size that actually speeds up learning.
+
+### The importance of equal batch sizes
+
+- A quick demo of why mini-batches should be the same size.
+- How to ensure that all batches the same size.
+
+[DUDL_regular_testBatchT2.ipynb](../regularization/DUDL_regular_testBatchT2.ipynb)
+
+![](.md/README.md/2023-06-05-21-18-11.png)
+
+The problem is computing the average over only to the average accuracy over only two data samples and then interpreting that accuracy in the same way that you would interpret the accuracy from a set of 40 samples.
+
+So if you're using very small mini batches, just be mindful of the reduced precision in your accuracy.
+
+### CodeChallenge: Effects of mini-batch size
+
+- How to perform a parametric experiment on mini-batch size.
+
+Your goal!
+
+- Change the code from [regularization/DUDL_regular_minibatch.ipynb](../regularization/DUDL_regular_minibatch.ipynb) and set the mimi-batch size to 2^N for N=1,...,6. Set the learning rate to 0.001.
+- Store the resulting train and test accuracy over epochs, for each batch size.
+
+Plot them all!
+
+[DUDL_regular_codeChallenge_minibatch.ipynb](../regularization/DUDL_regular_codeChallenge_minibatch.ipynb)
+
+![](.md/README.md/2023-06-08-03-08-10.png)
+
+The model learned much faster when we had fewer training examples bundled into the many batches.
+
+Now, this is not something that you would always observe.
+
+This is a phenomenon that you see when the samples are generally quite similar to each other and when all of the data samples are pretty similar to each other, then the model learns really well from each individual.
+
+Data sample, each sample, each data point is highly informative.
+
+So the model learns a lot from each individual sample.
+
+And in other cases, when the different samples are much more different from each other, then you often see the reverse that larger batch sizes up to a certain point.
+
+Larger batch sizes will generally give better performance and the model will learn faster.
+
+That's something you see more commonly in, for example, computer vision and image processing.
+
+If you're trying to train a network to recognize pictures of cats, you can imagine that different pictures of cats look really, really different from each other in terms of the raw pixel values.
+
+Whereas these data values, the iris data are much more homogenous.
+
+They're much more similar to each other.
