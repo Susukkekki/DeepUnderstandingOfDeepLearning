@@ -132,6 +132,22 @@
     - [Batch training in action](#batch-training-in-action)
     - [The importance of equal batch sizes](#the-importance-of-equal-batch-sizes)
     - [CodeChallenge: Effects of mini-batch size](#codechallenge-effects-of-mini-batch-size)
+  - [Metaparameters (activations, optimizers)](#metaparameters-activations-optimizers)
+    - [What are metaparameters?](#what-are-metaparameters)
+      - [(Meta)parameters](#metaparameters)
+      - [Many metaparameters](#many-metaparameters)
+      - [More parameters, more problems](#more-parameters-more-problems)
+    - [The wine quality dataset](#the-wine-quality-dataset)
+      - [Background: What makes a good wine?](#background-what-makes-a-good-wine)
+    - [CodeChallenge: Minibatch size in the wine dataset](#codechallenge-minibatch-size-in-the-wine-dataset)
+    - [Data normalization](#data-normalization)
+      - [The problem with non-normalized data](#the-problem-with-non-normalized-data)
+      - [Z-transform](#z-transform)
+      - [Min-max scaling: the main idea](#min-max-scaling-the-main-idea)
+      - [Which normalization to use?](#which-normalization-to-use)
+    - [The importance of data normalization](#the-importance-of-data-normalization)
+      - [What to do](#what-to-do)
+      - [Which is which?](#which-is-which)
 
 ## Math, numpy, PyTorch
 
@@ -2069,3 +2085,242 @@ If you're trying to train a network to recognize pictures of cats, you can imagi
 Whereas these data values, the iris data are much more homogenous.
 
 They're much more similar to each other.
+
+## Metaparameters (activations, optimizers)
+
+### What are metaparameters?
+
+- The difference between parameters and metaparameters.
+- A non-exhaustive list of DL metaparameters.
+- What really makes DL complicated and diffcult!
+
+#### (Meta)parameters
+
+Parameters: Features of the model that are learned by the algorithm (mainly, the weights between nodes). YOu do not set the parameters.
+
+Metaparameters: Features of the model that are set by you, not learned automatically by the model.
+
+#### Many metaparameters
+
+- Model architecture
+- Number of hidden layers
+- Number of units per layer
+- Cross-validation sizes
+- Mini-batch size
+- Activation functions
+- Optimization functions
+- Learning rate
+- Dropout
+- Loss function
+- Data normalization
+- Weight normalization
+- Weight initialization
+- etc
+
+#### More parameters, more problems
+
+It is simply impossible to search the entire metaparameter space.
+
+It is diffcult to know whether you are using the best model for your problem.
+
+Fortunately, parametric experiments on some metaparameters are feasible.
+
+Ultimately, you must use a combination of experience, intuition, previous successes, and empirical exploration,.
+
+### The wine quality dataset
+
+- About the wine dataset used in this section
+- Some important data issues that we'll address in this section, including normalization and batch sizes.
+
+#### Background: What makes a good wine?
+
+[DUDL_metaparams_intro2winedata.ipynb](../metaparams/DUDL_metaparams_intro2winedata.ipynb)
+
+![](.md/README.md/2023-06-09-01-25-36.png)
+
+![](.md/README.md/2023-06-09-01-25-48.png)
+
+아웃라이어 제거 후
+
+![](.md/README.md/2023-06-09-01-25-59.png)
+
+노멀라이제이션 후
+
+![](.md/README.md/2023-06-09-01-26-23.png)
+
+레이블 분포
+
+![](.md/README.md/2023-06-09-01-26-50.png)
+
+이 레이블을 3,4,5는 bad 로 0, 6, 7, 8 은 good 으로 1로 변경한다.
+
+### CodeChallenge: Minibatch size in the wine dataset
+
+- Gain more experience working with batches.
+- Run an experiment to determine the effects of batch size on learning in the wine dataset.
+
+[DUDL_metaparams_CodeChallengeBatches.ipynb](../metaparams/DUDL_metaparams_CodeChallengeBatches.ipynb)
+
+![](.md/README.md/2023-06-10-21-07-18.png)
+
+OK, now, this is just the training accuracy of what's really striking is the difference between training, accuracy and test accuracy here.
+
+None of these models are actually getting above around 75 percent accuracy.
+
+So what does that mean?
+
+We have a huge discrepancy between what we find during training and what we find during testing.
+
+Now, what this tells us is that these models are hugely overfitting the data, basically these models with very small batches.
+
+The model is just memorizing each individual row of data.
+
+The model is just learning the exact data points and it's just categorizing based on memorizing the data points here.
+
+The model is unable to do that.
+
+The model simply cannot memorize these data points because it's not learning from any of these test data points.
+
+So with really small batches, we have some pretty serious overfitting problems and then we get to the larger batches.
+
+One twenty eight and five twelve.
+
+Of course, there's many numbers missing in between here that you could try.
+
+But here we see the model (128 batches) isn't doing as well during the training accuracy, but it's certainly overfitting a lot less so in that sense.
+
+This model here with one hundred and twenty eight is arguably the best meta parameter from this set for this particular model architecture and for this particular type of data.
+
+And that's because it's still doing relatively well.
+
+It learns relatively quickly and the overfitting is very small.
+
+This is only I wouldn't even call this overfitting.
+
+It's getting a couple of percentage points higher accuracy during train than during test.
+
+So this means that when we present these different models to new data, then this model we can be most comfortable is going to have the best predictive ability of new data because it's not overfitting the training data as much as these other models are.
+
+Now, as I mentioned in the beginning of this section, that doesn't mean that this is the best possible model we can ever, you know, possibly in the universe.
+
+Great to predict when quality.
+
+All we can say is that this seems to be the best from among these five models that we have trained here.
+
+![](.md/README.md/2023-06-10-21-07-29.png)
+
+### Data normalization
+
+- Learn why data need to be in the same sacle.
+- Learn about z-normalization and min-max scaling.
+
+#### The problem with non-normalized data
+
+![](.md/README.md/2023-06-10-23-50-38.png)
+
+두 데이터 샘플의 로스 차이
+
+![](.md/README.md/2023-06-10-23-51-08.png)
+
+한 데이터 샘플의 값의 차이
+
+Data normalization helps ensure that:
+
+- All samples are processed the same.
+- All data features are treated the same.
+- Weights remain numerically stable.
+
+#### Z-transform
+
+1. Mean-center : Subtract the average from each individual value.
+2. Variance-normalize : Divide by the standard deviation.
+
+![](.md/README.md/2023-06-11-00-03-55.png)
+
+- X bar is the mean of this data feature
+- Xi is the column of the data
+- Sigma X is the standard deviaion of the data in Vector X.
+
+The units are standard deviations away from the mean of the ditribution.
+
+That makes sure that all of the data features and all the data samples are in the same range.
+
+The important point about Z transforming is that it doesn't change the relationships between the different values.
+
+Z-transform shifts and stretches, but doesn't change shape.
+
+![](.md/README.md/2023-06-11-00-11-39.png)
+
+I guess there are some small differences due to the bining, but the actual relationships between the different values haven't changed.
+
+![](.md/README.md/2023-06-11-00-11-55.png)
+
+So here is height in centimeters on the x axis and the Y axis shows the same data, but Z normalized or Z score.
+
+So the numerical values are different, but the relationship is exactly the same.
+
+The correlation is exactly one.
+
+These are perfectly correlated.
+
+All we're doing is changing the numerical scale.
+
+#### Min-max scaling: the main idea
+
+The next one is called Min Max scaling and the idea of Min Max scaling is to transform the numerical values of the data such that the smallest data value becomes zero and the largest data value becomes one.
+
+![](.md/README.md/2023-06-11-00-16-27.png)
+
+Min Max scaling like Z-normalization doesn't actually change the relationships between the different numbers, so that stays the same.
+
+The correlation between the original data and the scale data is exactly one.
+
+![](.md/README.md/2023-06-11-00-21-26.png)
+
+#### Which normalization to use?
+
+- Oftentimes, either one is fine.
+
+- Min-max scaling is common for images and uniform-data.
+
+> When you have uniform distributed data so the data are limited by specific bounds, numerical boundaries, then min max scaling is more common.
+
+![](.md/README.md/2023-06-11-00-28-59.png)
+
+- Z-scoring is common for data that are normally distributed.
+
+> Z-scoring is more common for data that have tails and some central concentration of data. So normally distributed, it doesn't need to be exactly normally distributed, but you know, something like a normal-ish distribution.
+
+![](.md/README.md/2023-06-11-00-29-16.png)
+
+The reason for that, by the way, is if you have, you know, data distributed like this, you might have one data point all the way out here.
+
+![](.md/README.md/2023-06-11-00-30-46.png)
+
+So if you apply Min Max scaling to the data point, that's all the way to this distribution, then that's actually going to cluster most of the data values around zero or somewhere, you know, close to zero.
+
+### The importance of data normalization
+
+- See a real example of the impact of data normalization!
+
+#### What to do
+
+- Re-run two previous scripts but change the normalization.
+
+We are going to use these two files right here.
+
+- [DUDL_metaparams_CodeChallengeBatches.ipynb](../metaparams/DUDL_metaparams_CodeChallengeBatches.ipynb)
+  - Z scoring turn off
+- [DUDL_regular_minibatch.ipynb](../regularization/DUDL_regular_minibatch.ipynb)
+
+#### Which is which?
+
+![](.md/README.md/2023-06-11-00-47-20.png)
+
+- 상 : 미정규화
+  - Train > Test : 오버피팅
+- 하 : 정규화
+  - Train ≈ Test : Less overfitting
+  - It did much better with the data normalization, particularly early on.
+
+![](.md/README.md/2023-06-11-00-45-36.png)
