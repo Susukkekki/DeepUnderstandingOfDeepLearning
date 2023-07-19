@@ -158,6 +158,18 @@
     - [CodeChallenge: Batch-normalize the qwerties](#codechallenge-batch-normalize-the-qwerties)
       - [Blast from the past](#blast-from-the-past)
       - [What to do](#what-to-do-1)
+    - [Activation functions](#activation-functions-1)
+      - [Why do DL models need activation functions?](#why-do-dl-models-need-activation-functions)
+      - [Desired qualities in an activation function](#desired-qualities-in-an-activation-function)
+      - [Commoly used activation functions](#commoly-used-activation-functions)
+        - [Sigmoid](#sigmoid)
+        - [Hyperbolc tangent](#hyperbolc-tangent)
+        - [ReLU](#relu)
+      - [ReLU variants](#relu-variants)
+      - [Comprehensive list of activation functions](#comprehensive-list-of-activation-functions)
+      - [How to pick an activation function?](#how-to-pick-an-activation-function)
+    - [Activation functions in PyTorch](#activation-functions-in-pytorch)
+      - [Differences between torch and torch.nn](#differences-between-torch-and-torchnn)
 
 ## Math, numpy, PyTorch
 
@@ -2676,3 +2688,434 @@ def createANNmodel(learningRate):
 위 처럼 들쪽날쭉 했던 결과가 아래처럼 변했다.
 
 ![](.md/README.md/2023-07-19-20-43-10.png)
+
+### Activation functions
+
+> - A reminder about why activation functions are important in DL.
+> - The features that make an activatio function useful
+> - The commonly used activation functions
+> - A laundry list of other activation functions that might also be useful.
+
+Of course, you already know about activation functions and why they are important in deep learning,
+
+but I haven't really talked about activation functions in a lot of detail.
+
+And so in this video, I want to go into more depth, have a more in-depth discussion about different activation functions.
+
+What are the advantages and limitations and similarities across different activation functions and so on.
+
+And then over the next several videos, we are going to compare the different activation functions in PyTorch and see how they do.
+
+#### Why do DL models need activation functions?
+
+![](.md/README.md/2023-07-20-05-45-55.png)
+
+Let me start with a reminder of why we need activation nonlinear activation functions.
+
+This is a picture from a slide from one of the earlier videos in the course where I introduced you to
+multilayer Perceptron models or multilayered deep learning models.
+
+And the point of that video was that all deep learning models, no matter how deep they are, no matter how many hidden layers they have, if the activation functions are linear, so the functions between
+the layers are all linear, then they are all simply reducible to one layer regression models.
+
+And that's because any linear activation function can be simply learned by the weights during training.
+
+So therefore, we need some kind of nonlinear transformation between the different models that allows for the increased complexity and increased depth of abstraction, of learning the relationships between the different input variables.
+
+![](.md/README.md/2023-07-20-05-47-12.png)
+
+So therefore our models look something like this.
+
+We have the input and hidden layers and output layers and so on.
+
+All of these layers themselves are linear.
+
+They are all implementing linear operations.
+
+It's just weighted combinations of the inputs into each of the units.
+
+So therefore we need to have a nonlinear function, a nonlinear transformation in between the linear layers.
+
+![](.md/README.md/2023-07-20-05-48-30.png)
+
+So that begs the question of what kind of activation function should we use?
+
+What does it take to be a good activation function?
+
+And that's because there is you know, there's literally an infinite number of possible nonlinear activation functions you could stick in between these layers.
+
+So what does it take to be a good nonlinear activation function?
+
+And why should we prefer some activation functions over others?
+
+#### Desired qualities in an activation function
+
+![](.md/README.md/2023-07-20-05-54-00.png)
+
+Well, when I was thinking about how to explain this and put this slide together, I had a funny thought that I could you know, we should have like like a dating app for activation functions.
+
+So, you know, here's your phone and you open up the dating app and you see the picture of the activation function and, you know, some descriptions.
+
+And then you get to swipe right, if you like, that activation function or you swipe left if you are not interested in that activation function.
+
+Well, I didn't make a whole big deal out of this. I didn't actually make this app, but I just thought it would be a funny idea and I thought I would share it with you.
+
+So here is when to swipe right for an activation after a hidden layer.
+
+This is generally when to swipe right.
+
+I'm not specifically talking about the ReLU function.
+
+So you want to swipe right for an activation function attached to a hidden layer when that activation function has a non-linearity, when it is computationally simple.
+
+This is important because that activation function is going to be called many, many, many times millions or billions, maybe even trillions of times.
+
+So it has to be computationally simple.
+
+Otherwise, your model is just going to take forever to train.
+
+You want the activation function to avoid having to restrict it of a numerical range.
+
+And you also want to prevent or at least minimize the risk of the activation function leading to varnishing or exploding gradient problems.
+
+Now, if these final two points are not totally sensible yet, then don't worry.
+
+I'm going to talk about them more in the next slide.
+
+OK, so this is when you would swipe right.
+
+This is when you would prefer a activation function for a hidden layer.
+
+Then we can also talk about when to swipe right, when to prefer an activation function for an output
+
+layer, because it turns out that the qualities that you want for and a hidden layer or also the input layer are different from the qualities that you want for an output layer.
+
+So for an output layer, first of all, you have to think about the kind of problem that you're working on and what kind of output you need from the model.
+
+So you want a non-linearity if the model is supposed to classify or categorize the input data or you want a linear activation function if you need a linear output like a regression or continuous numeric output, like a regression.
+
+So the output layer can definitely have a linear activation function.
+
+If you have a classification problem or categorization problem, then you want the nonlinear activation function to have boundaries of saturation that are easily convertible to probabilities.
+
+That's quite a mouthful of words, but it basically means that you want your output layered, nonlinear activation function to be bound by zero and one.
+
+So the smallest number of the model could possibly output is zero.
+
+The largest number would be one.
+
+OK, so these are the desired qualities.
+
+I'm now going to show you a few of the most commonly used activation functions and I'll talk about their properties and how they match these desired properties here.
+
+#### Commoly used activation functions
+
+##### Sigmoid
+
+![](.md/README.md/2023-07-20-06-10-15.png)
+
+OK, so let's start with a sigmoid.
+
+Sigmoid functions are often used for output layers, the nonlinear activation of the output layer.
+
+Now it has a biased average.
+
+What does that mean?
+
+It means that the average of all of the input numbers is is going to be zero, but the average of all the output numbers is going to be zero point five.
+
+You can see this function never gets negative and it never goes above one.
+
+So the average is 0.5.
+
+So that actually introduces a shift into the model.
+
+Now, for an output layer, that's categorizing.
+
+That's great that we want that bias because that gives us a because we convert this into a probability.
+
+We say, you know, with more than 50 percent probability, the model predicts that it's Category A..
+
+Now, here I say that this function is nearly linear.
+
+Obviously, this is a nonlinear function, but you can see that for ranges close to zero here.
+
+So let's say around minus one to around plus one.
+
+This function actually approach is a linear function, or at least it's well characterized as well, fit by a linear function.
+
+So that means that the sigmoid function actually is fairly linear within a certain range.
+
+So if the inputs are between approximately minus one to plus one, the outputs of the sigmoid function are basically going to be just a linear transformation.
+
+So that makes the sigmoid function not really that great for a hidden layer.
+
+It also saturates at zero and one which means it runs the risk of gradient varnishing.
+
+So large changes and activations above, I don't know, two or two and a half or so and less than minus two and a half ish.
+
+You can have very large variations out here with very, very tiny resulting changes in the sigmoid, the output of the sigmoid.
+
+So that means that we are squeezing the gradient for relatively large values and the gradient or the 
+computation becomes linear for values close to zero.
+
+So for all those reasons, reasons, the sigmoid activation function is great for the output, the final output layer of a model.
+
+It's not really that great for the hidden layers or the input layer of a model.
+
+##### Hyperbolc tangent
+
+![](.md/README.md/2023-07-20-06-10-15.png)
+
+Then we get to hyperbolic tangent.
+
+This is very similar to a sigmoid.
+
+In fact, you can just parameter you can add some parameters to it, sigmoid function and produce the hyperbolic tangent or at least a function that's extremely close to it.
+
+So it's also nearly linear within some range.
+
+You can see just like the sigmoid function, there's you can you can even see it looks like a straight line.
+
+Of course, formally. This is not a straight line. This is not a linear function.
+
+But there is a range of input values where the the hyperbolic tangent actually is basically a linear function.
+
+And we also have some compression down here.
+
+So we are going to squeeze these gradients, which risks vanishing gradients problems.
+
+Now, hyperbolic tangent was for a long time for for many, many years.
+
+This was the most commonly used activation function in the hidden layers.
+
+So it used to be the case that the input and hidden layers had hyperbolic tangent activation functions and the output layer had sigmoid function.
+
+##### ReLU
+
+![](.md/README.md/2023-07-20-06-10-15.png)
+
+But since then, people developed or had the amazing insight that a ReLU function turns out to be really great.
+
+Again, value is for rectified linear unit. It's a very simple system. It's very simple activation function.
+
+It's zero for all negative values of the input and it is the identity function for all positive values. 
+
+So the slope here is actually one.
+
+It might look visually like the slope is larger than one, but that's just because of the differences in the the Y axis and the X axis scaling, which I wanted to match between these three plots.
+
+So this actually has a slope of one.
+
+You can see the formula is also super duper simple.
+
+All we have to do is basically, you know, clip all of the negative values.
+
+So anything negative turns into zero.
+
+Anything positive stays itself.
+
+So this means that it's actually a function of it's a piecewise Linear function, so we have this zero piece and we have this piece here.
+
+I still say it's strongly non-linear and that is because in deep learning, we force all of the activations to be relatively close to zero.
+
+And we do that through normalizing the input.
+
+We do that through weights initialization, which I haven't talked about yet, but I will later in the course.
+
+And we do that through batch normalization.
+
+So basically, as the input data are going through each layer, as they get transformed over and over again through the different hidden layers, the activations are are pretty much clustered around, you know, minus one to two to plus one to two.
+
+They're centered around zero and then stay close to zero.
+
+So they're around zero. You see this really, really sharp non-linearity and around zero is exactly where you see the close approximation to a linear function here in tanH.
+
+And here in sigmoid.
+
+So therefore, ReLU has a really strong, nonlinear component to it.
+
+It never saturates on the positive side.
+
+That actually does mean that RELU functions run the risk of exploding gradients problem because all of the positive numbers can just get larger and larger and larger.
+
+There's nothing in the activation function that would clamp them down.
+
+So <ins>this is one reason why batch normalization works really well with the RELU activation function.</ins>
+
+The batch normalization kind of prevents or minimizes the risk of exploding gradients.
+
+OK, so in modern deep learning architectures, it's very common to use ReLUs for the hidden layers and also the input layer 
+
+and sigmoid for the output layer if the model is doing categorization. 
+
+TanH is less commonly used these days, although it is still used for some models in image processing and generative adversarial networks and so on.
+
+So you will see that the hyperbolic tangent come back up later in this course.
+
+#### ReLU variants
+
+![](.md/README.md/2023-07-20-06-23-41.png)
+
+So let me talk a little bit more about the ReLU function, because it turns out that there's quite a few variants of the value activation function.
+
+This is exactly the same as what I showed in the previous slide, just reproduced here for comparison.
+
+So there's a variant called Leaky Relu.
+
+You can see that it's really similar, except now we allow negative activation so we don't clamp down at zero.
+
+We allow negative activations, but we scale them by some scaling factor called Alpha.
+
+So this depicts an alpha of 0.1.
+
+You can see there's still this very strong non-linearity.
+
+It's still a piecewise function, but this allows negative activations to pass through.
+
+And then here we have something called a the general term is called a ReLU-N where N corresponds to a number where you clamp the upper values.
+
+So instead of allowing this function to grow up to infinity, you clamp down at some number.
+
+So in this graph I'm depicting RELU-2, because this clamps down at a value of two, or maybe it's even a little higher than two.
+
+But this is just for visualization.
+
+A typical value is six.
+
+So the typical value would be value dash six, indicating that you clamp down at a value of six.
+
+I just didn't feel like extending the plot out that far.
+
+![](.md/README.md/2023-07-20-06-10-15.png)
+
+By the way, one thing I forgot to mention in the previous slide about these ReLU functions and these other functions, these functions, the sigmoid and the hyperbolic tangent, they are all continuous and differentiable<sup>미분 가능한</sup> everywhere.
+
+So you can define a derivative at every single point on these two functions.
+
+![](.md/README.md/2023-07-20-06-14-14.png)
+
+ReLU functions are different. They are not continuous. They have a discontinuity.
+
+And there is a point at zero at this discontinuity where there is no derivative.
+
+The derivative is undefined here at exactly this point.
+
+Now, you might think this would be problematic from a calculus perspective because we need to compute the derivative of this activation function during gradient descent.
+
+However, this turns out to be not a problem.
+
+We can simply replace this non differentiable point with zero, but also in practice, we don't really need to worry about it because this critical point here only exists at exactly, exactly, exactly zero.
+
+And the probability of having an activation at exactly zero is infinitesimal<sup>극미한, 극소의</sup>.
+
+It is galactically<sup>With regard to galaxies, or in a galactic context. To a huge degree;</sup> tiny because we have randomized weights, we have computer rounding errors and so on.
+
+So we're basically never going to get an activation of exactly zero.
+
+So in practice, it doesn't really matter that you have this this one point or in this case, two points of non differential ability.
+
+![](.md/README.md/2023-07-20-06-20-03.png)
+
+OK, so which of these value functions is better?
+
+It's it's unclear and it doesn't seem to be any clear winner.
+
+So it is very clear that ReLUs are better than sigmoid and it is clear that they are better than TanH functions.
+
+But some kinds of problems you'll see like the leaky ReLU will outperform the regular ReLU, but not always.
+
+Sometimes it's the reverse.
+
+It's not generally the case that any one of these is always going to be better than another one.
+
+So people often stick to ReLU, I think largely for historical reasons, that this was the first one that was introduced.
+
+So that's the one that gets baked into a lot of existing models we will see in the next couple of videos.
+
+And also later on in the course, we'll see specific examples where leaky ReLU actually performs pretty well.
+
+OK, so now I've introduced you to several nonlinear activation functions.
+
+#### Comprehensive list of activation functions
+
+These are by far not the only activation functions that exist.
+
+In fact, I went to Google, I only started typing list of activation functions and Google suggested the rest of this search here.
+
+And the first hit that came up was from twenty fifteen fifteen, which is like quite a few years ago.
+
+So there are many, many, many nonlinear activation functions that can be used.
+
+- https://pytorch.org/docs/stable/nn.html#non-linear-activations-weighted-sum-nonlinearity
+
+#### How to pick an activation function?
+
+![](.md/README.md/2023-07-20-06-27-35.png)
+
+So how do you pick a nonlinear activation function when there are so many out there?
+
+Well, good thing is to a good practice is to start with the most commonly used functions.
+
+There is a reason why Relu inside the model and sigmoid at the output layer are so commonly used because they really work very well.
+
+They're simple, straightforward, and they work really well.
+
+But you should definitely feel free to experiment with other activation functions, particularly if you are unsatisfied with the performance of your model.
+
+Keep in mind that activation functions are meta parameters of the model, so if you are varying, the activation functions only evaluate them on the dev set and then you have to use the test set only at the very, very, very end.
+
+Once you are happy with the activation function that you've selected based on the train dev set.
+
+meta parameter training loop.
+
+Finally, keep in mind that some of these activation functions are developed for academic or mathematical or intellectual purposes, and just because an activation function has been proposed has been published doesn't mean that it's necessarily great.
+
+That doesn't mean that it's been rigorously tested in many, many different kinds of architectures and in many different datasets.
+
+### Activation functions in PyTorch
+
+[DUDL_metaparams_ActivationFuns.ipynb](../metaparams/DUDL_metaparams_ActivationFuns.ipynb)
+
+![](.md/README.md/2023-07-20-06-34-43.png)
+
+![](.md/README.md/2023-07-20-06-35-46.png)
+
+![](.md/README.md/2023-07-20-06-37-40.png)
+
+![](.md/README.md/2023-07-20-06-39-46.png)
+
+![](.md/README.md/2023-07-20-06-36-31.png)
+
+#### Differences between torch and torch.nn
+
+사용법만 다를 뿐 결과는 동일
+
+```python
+# redefine x (fewer points to facilitate visualization)
+x = torch.linspace(-3,3,21)
+
+# in torch
+y1 = torch.relu(x)
+
+# in torch.nn
+f = torch.nn.ReLU()
+y2 = f(x)
+
+
+# the results are the same
+plt.plot(x,y1,'ro',label='torch.relu')
+plt.plot(x,y2,'bx',label='torch.nn.ReLU')
+plt.legend()
+plt.xlabel('Input')
+plt.ylabel('Output')
+plt.show()
+```
+
+![](.md/README.md/2023-07-20-06-41-00.png)
+
+- https://pytorch.org/docs/stable/nn.html#non-linear-activations-weighted-sum-nonlinearity
+
+아래 그림은 선형 입력이 비선형 함수 ReLU 에 의해서 비선형적으로 변화하는가를 보여준다.
+
+![](.md/README.md/2023-07-20-06-45-18.png)
