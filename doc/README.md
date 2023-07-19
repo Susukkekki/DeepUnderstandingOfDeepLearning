@@ -170,6 +170,7 @@
       - [How to pick an activation function?](#how-to-pick-an-activation-function)
     - [Activation functions in PyTorch](#activation-functions-in-pytorch)
       - [Differences between torch and torch.nn](#differences-between-torch-and-torchnn)
+    - [Activation functions comparison](#activation-functions-comparison)
 
 ## Math, numpy, PyTorch
 
@@ -3119,3 +3120,45 @@ plt.show()
 아래 그림은 선형 입력이 비선형 함수 ReLU 에 의해서 비선형적으로 변화하는가를 보여준다.
 
 ![](.md/README.md/2023-07-20-06-45-18.png)
+
+### Activation functions comparison
+
+> - See a direct comparison of activation functions on the wine dataset
+> - See that the sigmoid acitvation isn't the best choice (when used in hidden layers!)
+
+[DUDL_metaparams_ActivationComparisons.ipynb](../metaparams/DUDL_metaparams_ActivationComparisons.ipynb)
+
+```python
+# create a class for the model
+
+class ANNwine(nn.Module):
+  def __init__(self,actfun):
+    super().__init__()
+
+    ### input layer
+    self.input = nn.Linear(11,16)
+    
+    ### hidden layers
+    self.fc1 = nn.Linear(16,32)
+    self.fc2 = nn.Linear(32,32)
+
+    ### output layer
+    self.output = nn.Linear(32,1)
+
+    # activation funcion to pass through
+    self.actfun = actfun
+  
+  # forward pass
+  def forward(self,x):
+    # get activation function type
+    # this code replaces torch.relu with torch.<self.actfun>
+    actfun = getattr(torch,self.actfun)
+    x = actfun( self.input(x) )
+    x = actfun( self.fc1(x) )
+    x = actfun( self.fc2(x) )
+    return self.output(x)
+```
+
+![](.md/README.md/2023-07-20-06-57-12.png)
+
+> 👉 Batch Norm 을 적용하면 Test Accuracy 를 좀더 올릴수 있다.
