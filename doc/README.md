@@ -2310,8 +2310,12 @@ So if you apply Min Max scaling to the data point, that's all the way to this di
 We are going to use these two files right here.
 
 - [DUDL_metaparams_CodeChallengeBatches.ipynb](../metaparams/DUDL_metaparams_CodeChallengeBatches.ipynb)
-  - Z scoring turn off
+  - Now, this script here already had the data normalization on the data were already Z scored.
+  - So what you want to do is rerun this code with the data Z scoring turn off.
+  - So you basically just find the right line of code and then comment it out here.
 - [DUDL_regular_minibatch.ipynb](../regularization/DUDL_regular_minibatch.ipynb)
+  - This one, you might remember there was an entire cell about data normalization.
+  - And I said in the code it's written and I also send the video that we don't touch that cell we leave that commented for now and we would get back to it in the future.
 
 #### Which is which?
 
@@ -2323,4 +2327,51 @@ We are going to use these two files right here.
   - Train ≈ Test : Less overfitting
   - It did much better with the data normalization, particularly early on.
 
+OK, so question for you, which is which one of these two has data normalization and the other one doesn't have data normalization?
+
+The above is the previous result with no data normalization.
+
+The below is the result with data normalization.
+
+![](.md/README.md/2023-06-11-00-45-36-2.png)
+
+So this was the long one that took 15 minutes to run where we manipulated the batch size.
+
+And we saw just as a quick reminder, we saw in general these models all did quite well.
+
+The models with smaller mini batches learned better, but they turned out to be just memorizing the training data.
+
+And the test performance was pretty good overall, somewhere around 75 to 80 percent in the end.
+
 ![](.md/README.md/2023-06-11-00-45-36.png)
+
+I reran the test without any data normalization and the results are pretty striking.
+
+So first of all, we never get very high accuracy on the training.
+
+Looks like it's still going up.
+
+So maybe maybe if we ran for another thousand or three thousand bucks, we would get, you know, higher accuracy.
+
+But you can see the test performance is also not doing very well.
+
+So the test performance is somewhere around 70 percent.
+
+Maybe a little bit over 70 percent, but that's noticeably lower, its worst performance compared to here with the data normalization, where we got up to around 80 percent accuracy.
+
+This one really simple trick of just Z normalizing the data improved the test accuracy by, you know, close to 10 percent. That's that's a pretty significant increase.
+
+```python
+# z-score the data
+import scipy.stats as stats
+cols2zscore = iris.keys()
+cols2zscore = cols2zscore.drop('species')
+iris[cols2zscore] = iris[cols2zscore].apply(stats.zscore)
+```
+
+```python
+# z-score all columns except for quality
+cols2zscore = data.keys()
+cols2zscore = cols2zscore.drop('quality')
+data[cols2zscore] = data[cols2zscore].apply(stats.zscore)
+```
