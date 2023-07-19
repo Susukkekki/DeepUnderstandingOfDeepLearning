@@ -148,6 +148,16 @@
     - [The importance of data normalization](#the-importance-of-data-normalization)
       - [What to do](#what-to-do)
       - [Which is which?](#which-is-which)
+    - [Batch normalization](#batch-normalization)
+      - [Normalize the input... which input?](#normalize-the-input-which-input)
+      - [Mechanism of batch normalization](#mechanism-of-batch-normalization)
+      - [Batch normalization and train/test](#batch-normalization-and-traintest)
+      - [Discussion](#discussion)
+      - [Is batchnorm always great?](#is-batchnorm-always-great)
+    - [Batch normalization in practice](#batch-normalization-in-practice)
+    - [CodeChallenge: Batch-normalize the qwerties](#codechallenge-batch-normalize-the-qwerties)
+      - [Blast from the past](#blast-from-the-past)
+      - [What to do](#what-to-do-1)
 
 ## Math, numpy, PyTorch
 
@@ -2375,3 +2385,294 @@ cols2zscore = data.keys()
 cols2zscore = cols2zscore.drop('quality')
 data[cols2zscore] = data[cols2zscore].apply(stats.zscore)
 ```
+
+### Batch normalization
+
+> - Why normalizing the original data might not be enough
+> - How to implement batch normalization
+> - Why it probably should be called layer normalization not batch normalization
+
+#### Normalize the input... which input?
+
+So the question is, why would we normalize only the raw data that we input into the first layer of the model and not also normalize the input that goes into the subsequent layers of the model?
+
+So you can imagine that even if these data, the raw input data are normalized, the Z normalized or that min max scale, even if these input data are normalized, the data going into this layer are not necessarily going to be normalized.
+
+And then the data going into the next layer are even less likely to be normalized because we are taking weighted combinations of the inputs and furthermore, we're shifting them by the bias terms.
+
+OK, so that's the idea.
+
+The idea of batch normalization is we don't just normalize the input or I should say we extend the concept of normalizing the input from only applying it to the raw data, to applying it to all the inputs into any layer, regardless of where those inputs are coming from.
+
+![](.md/README.md/2023-07-19-19-09-51.png)
+
+#### Mechanism of batch normalization
+
+![](.md/README.md/2023-07-19-19-13-57.png)
+
+Batch normalization is not the same thing as Z Transformer, Z normalization, but it's very similar.
+
+So what we do is we redefine the inputs to say some parameter here.
+
+I'm calling a gamma times the actual inputs plus beta, which is like an offset parameter.
+
+So beta is a `shifting parameter` and gamma is a `scaling parameter`.
+
+So this kind of X as the mean shifting and this kind of X as the Standard deviation scaling.
+
+So just make sure that this is clear.
+
+So why here is the output of this layer, which is the input to the next layer.
+
+So, of course, the outputs of one layer are the inputs into the next layer, except at the output layer of the model.
+
+So then the computation of the output is the nonlinear activation function of this is not X Tildy, sorry, this is not X, this is now X Tildy where X tildy is the normalized input times the weights.
+
+So still a weighted linear combination.
+
+But now X Tilde is this normalized input here.
+
+So it takes the quote unquote raw input which is the output from the previous layer, and it scales it by Gamma and it shifts it by Beta and that becomes the input into the linear weighted combination.
+
+So and then again, Gamma and Beta are not terms that we define.
+
+They are not drawn directly from the data.
+
+They are parameters that the model will learn through back propagation, through training.
+
+Now, you can see here, the way I wrote it, is that the normalization takes place inside the activation function.
+
+So in General batch norm goes before the activation function.
+
+It is actually a little bit discussed in the literature and online.
+
+If you look for this, there's some I wouldn't really call it disagreements, but there are differing opinions as to where exactly batched Norm should go.
+
+So most people say that batch Norm should go inside the linear term here and other people will apply the batch norm to the the result of sigma here.
+
+So the output of the activation function in the code in the next video, you are going to have the opportunity to explore both of those.
+
+It turns out it's really easy to change this implementation in the code.
+
+So I don't have a really strong opinion about this.
+
+To me, this approach seems to make more sense because here we are already applying, for example, RELU, which just takes the positive values.
+
+So this approach of batch norm before the activation function feels more intuitive to me.
+
+But, you know, in deep learning, intuition only gets you so far.
+
+And what feels intuitive is not necessarily the best thing to do.
+
+I think you will find if you explore this in many different models and many different data sets, I think you will find that sometimes it works better to batch Norm before the activation and sometimes it works just as well, or maybe better to normalize after or to batch norm after the activation function.
+
+#### Batch normalization and train/test
+
+![](.md/README.md/2023-07-19-19-36-42.png)
+
+OK, so because these are parameters that are learned, batch normalization is only applied during training.
+
+During test batch norm get switched off during validation and also during testing.
+
+And that's because the parameters that the gamma and beta parameters are learned based on individual batches of data.
+
+So we have a batch of 32 data samples or 64 data samples and those batches define how the model learns the individual two parameters, the shifting and the stretching parameter.
+
+Now during test the batch size could actually differ, including we could be testing only a single value, a single data point.
+
+And so if you're testing only a single data point, then the mean is just that data point and the standard deviation is undefined.
+
+There is no variance of one data point, one data sample.
+
+So this is why batch normalization is modified and switched on during training.
+
+When you get to the testing or evaluation mode, then the model will basically just apply the parameters that it learned during training.
+
+As I've mentioned before, Python does this automatically for you with net.eval where net would be the name of your particular network.
+
+So you type net.eval before running through the test data and the batch norm is switched off.
+
+#### Discussion
+
+![](.md/README.md/2023-07-19-19-44-05.png)
+
+So a few final points of discussion here.
+
+Batch normalization.
+
+This operation is applied to the inputs that are coming into each layer in the model.
+
+They're not actually applied to the mini batches themselves in terms of the data, although the parameters are computed for each mini batch separately.
+
+That's why it's called batch normalization.
+
+In the next videos, you're going to see batch normalization applied to relatively shallow, deep learning network.
+
+So without a huge number of layers in general, batch normalization tends to be most useful for deep networks.
+
+So when you have many, many, many hidden layers, that's where you run a much higher risk of gradient, the gradients vanishing or exploding.
+
+You can also try batch normalization if you have relatively low accuracy in  your training outcome, but mostly batch norm is something to use with with much deeper neural networks.
+
+So batch norm is a form of regularisation, because the inputs get shifted per batch, so the parameters are applied to a group of data samples and the parameters are computed are learned based on a group of samples, not based on individual samples.
+
+So therefore, we are aggregating more data into the estimation of the parameter.
+
+And that is why batch form is a form of regularization.
+
+#### Is batchnorm always great?
+
+![](.md/README.md/2023-07-19-19-49-06.png)
+
+So here I ran the same model with batch norm applied and without batch norm applied.
+
+I'll tell you about the data and the model in the next video so you don't have to worry about the details of the architecture here.
+
+The main point is to see that the losses are smaller and they decay faster for when we have batch norm turned on compared to a batch norm turned off.
+
+And also, if you look at the training accuracy, you can see the accuracy is higher.
+
+Quite a bit is a pretty noticeable effect.
+
+The training accuracy is higher with batch norm compared to without batch Norm.
+
+But here at the test accuracy, it's a little bit less clear.
+
+In fact, if anything, this time I ran through the model.
+
+It was the test accuracy was even higher without Bache Norm.
+
+So then I ran through the model again, you know, different random set of weights to begin with.
+
+And here we actually did get higher performance with batch norm compared to without batch norm.
+
+So some some features here seem pretty clear.
+
+The losses are smaller with batched norm.
+
+The training accuracy seems to be consistently higher.
+
+As for the evaluation performance, the test accuracy is slightly less clear whether bad storm was really beneficial in this particular model and in this particular data set.
+
+### Batch normalization in practice
+
+[DUDL_metaparams_batchNorm.ipynb](../metaparams/DUDL_metaparams_batchNorm.ipynb)
+
+```python
+# create a class for the model WITH BATCH NORM
+
+class ANNwine_withBNorm(nn.Module):
+  def __init__(self):
+    super().__init__()
+
+    ### input layer
+    self.input = nn.Linear(11,16)
+    
+    ### hidden layers
+    self.fc1    = nn.Linear(16,32)
+    self.bnorm1 = nn.BatchNorm1d(16) # the number of units into this layer
+    self.fc2    = nn.Linear(32,20)
+    self.bnorm2 = nn.BatchNorm1d(32) # the number of units into this layer
+
+    ### output layer
+    self.output = nn.Linear(20,1)
+  
+  # forward pass
+  def forward(self,x,doBN):
+
+    # input (x starts off normalized)
+    x = F.relu( self.input(x) )
+
+
+    if doBN:
+      # hidden layer 1
+      x = self.bnorm1(x) # batchnorm
+      x = self.fc1(x)    # weighted combination
+      x = F.relu(x)      # activation function
+
+      # hidden layer 2
+      x = self.bnorm2(x) # batchnorm
+      x = self.fc2(x)    # weighted combination
+      x = F.relu(x)      # activation function
+    
+
+    else:
+      # hidden layer 1
+      x = F.relu( self.fc1(x) )
+
+      # hidden layer 2
+      x = F.relu( self.fc2(x) )
+
+    # output layer
+    return self.output(x)
+```
+
+### CodeChallenge: Batch-normalize the qwerties
+
+> - Get a bit more experience incorporating batch normalization
+> - See Wheter batch normalization can fix an annoying problem from earlier in the course.
+
+#### Blast from the past
+
+![](.md/README.md/2023-07-19-20-06-28.png)
+
+In this challenge, you are going to have the opportunity to explore the impact of Bache normalization in a fairly simple, so learning model is not very deep and see whether that can actually fix an annoying problem that we discovered earlier in the course.
+
+So you will remember in the section ANN's, it was a video called Multilayer ANN we built a deep learnin model that could classify qwerties.
+
+And we ran an experiment where we retrained a model over many different learning rates.
+
+And here's what we found, basically that the model either gets it, it gets above 99 percent accuracy or it just doesn't get it.
+
+It gets 50 percent accuracy.
+
+So it just is running a chance and the losses stay pretty high.
+
+Now, the interpretation that I gave at that time previously was that, you know, maybe this kind of problem isn't really well suited for deep learning.
+
+And that is true.
+
+You know, that is it's a linearly separable problem.
+
+So really, it would be better to use a different method like SVM or Kmeans or something like that.
+
+But now we will revisit that conclusion and see if batch normalization helps us learn the distinction between the two populations of qwerties.
+
+#### What to do
+
+![](.md/README.md/2023-07-19-20-28-17.png)
+
+OK, so here is what you want to do.
+
+[DUDL_ANN_multilayer.ipynb](../ANN/DUDL_ANN_multilayer.ipynb)
+
+Go back to that code file that was DUDL_ANN_multilayer.
+
+That's the name of the notebook file.
+
+Modify that file to add batch normalization, just like I showed you in the previous video.
+
+So you add batch normalization after the input layer.
+
+So between the input layer and the hidden layer and basically just run the whole notebook again, do the experiment and see whether that fixes our problem, that we have a bunch of runs where the model just fails to learn above chance level.
+
+```python
+def createANNmodel(learningRate):
+
+  # model architecture
+  ANNclassify = nn.Sequential(
+      nn.Linear(2,16),  # input layer
+      nn.ReLU(),        # activation unit
+      nn.BatchNorm1d(16),
+      nn.Linear(16,1),  # hidden layer
+      nn.ReLU(),        # activation unit
+      nn.Linear(1,1),   # output unit
+      nn.Sigmoid(),     # final activation unit
+        )
+```
+
+![](.md/README.md/2023-07-19-20-45-59.png)
+
+위 처럼 들쪽날쭉 했던 결과가 아래처럼 변했다.
+
+![](.md/README.md/2023-07-19-20-43-10.png)
