@@ -173,6 +173,9 @@
     - [Activation functions comparison](#activation-functions-comparison)
     - [CodeChallenge: Compare relu variants](#codechallenge-compare-relu-variants)
       - [What to do](#what-to-do-2)
+    - [CodeChallenge: Predict sugar](#codechallenge-predict-sugar)
+      - [Background: What makes a sugary wine?](#background-what-makes-a-sugary-wine)
+      - [Solution](#solution)
 
 ## Math, numpy, PyTorch
 
@@ -3225,3 +3228,132 @@ for ai,actfun in enumerate(activation_funs):
   winenet = ANNwine(actfun)
   trainByAct[:,ai],testByAct[:,ai],losses = trainTheModel()
 ```
+
+### CodeChallenge: Predict sugar
+
+> - Refresh your DL skills!
+> - Need to put your thinking cap on :)
+
+#### Background: What makes a sugary wine? 
+
+in particular, we are going to go back to the line data set.
+
+And now so far we've always been trying to predict good wines.
+
+We've been trying to predict these subjective rating of each of these wines.
+
+But now in this code challenge, we want to ask the question, what makes a wine sugary?
+
+So instead of predicting wine quality, we want to predict wine, sugar in particular.
+
+There is a column in the dataset that is called Residual Sugar, and we want to predict residual sugar from all of the other data features.
+
+- Start from the code to predict wine quality [DUDL_metaparams_CodeChallengeBatches.ipynb](../metaparams/DUDL_metaparams_CodeChallengeBatches.ipynb)
+- Modify the code:
+  - Use only one batch size
+  - Predict 'residual sugar'.
+
+Be mindful! There are many small changes to make.
+
+So here is an example of my results.
+
+![](.md/README.md/2023-07-20-12-55-41.png)
+
+You can see the lost function for for training and test.
+
+And you see there's a bit of overfitting that we have here.
+
+So the training data or the model fits the training data better than the test data.
+
+But you can see it's still actually you know, it's going down a tiny bit, but it is still technically going down.
+
+So the model is still improving its performance a little bit over these 1000 training epics.
+
+Here is another measure of model performance.
+
+This is a correlation between the model predicted sugar and the actual sugar.
+
+So in the lost function, this would be y hat and this would be y.
+
+So you can see I'm plotting them here and then I compute the correlation coefficient between the model predicted output or the model predicted sugar, the output of the model and the actual value from the data.
+
+You can see that during training the correlation is super duper high.
+
+It's almost point nine eight.
+
+That's a really strong correlation.
+
+And for the test data, it still does pretty well.
+
+The correlation of point eight three, that's certainly a respectable correlation, but it's not quite as good.
+
+Now, I didn't spend a whole lot of time changing the model architecture or systematically exploring different things.
+
+So if you like, you can do some additional work and see if you can beat my results.
+
+You can see if you can get lower, in particular, the test loss to be lower and the test correlation to be stronger.
+
+That said, the main focus, the most important thing is to properly adjust everything that needs to be adjusted in the code.
+
+That's the most important thing to get it to work.
+
+And then if you would like to go an extra step and see if you can outperform my model, then go for it, OK?
+
+And after you finish running through the model, I would also like you to produce a graph of the correlation matrix.
+
+![](.md/README.md/2023-07-20-12-58-00.png)
+
+So this is a matrix of all the correlations across all of the combinations of data features.
+
+So these are all the columns in the data set, in the pandas data frame.
+
+So here you see, for example, the correlation between chlorides and citric acid is point one five or whatever that number maps onto.
+
+So and this row here, residual sugar, this is the data feature that we want to predict here in the columns.
+
+So this is the thing we are going to predict.
+
+And I would like you to look at this and see how you interpret these correlations, the patterns of correlations in context with this. Overall, very good performance of the learning model.
+
+I will interpret this, I will talk more about this when we get to that point in the code.
+
+All right.
+
+So pause the video, see how well you can predict sugar in the wind data that I hope you enjoy working through this challenge.
+
+#### Solution
+
+[DUDL_metaparams_CodeChallenge_sugar.ipynb](../metaparams/DUDL_metaparams_CodeChallenge_sugar.ipynb)
+
+```python
+# z-score all columns (including quality!)
+cols2zscore = data.keys()
+data[cols2zscore] = data[cols2zscore].apply(stats.zscore)
+cols2zscore
+```
+
+```python
+# but first drop residual sugar
+cols2zscore = cols2zscore.drop('residual sugar')
+
+dataT = torch.tensor( data[cols2zscore].values ).float()
+sugar = torch.tensor( data['residual sugar'].values ).float()
+sugar = sugar[:,None] # transform to matrix
+```
+
+```python
+def trainTheModel():
+
+  # loss function and optimizer
+  lossfun = nn.MSELoss()
+```
+
+정확도는 어떻게? 이것때문에 한참을 헤맸음.
+
+풀이에서는 그냥 정확도 측정을 삭제했음. 헐!
+
+하지만 다음 코멘트를 하긴 함.
+
+Now, if you want a measure of accuracy within the training to see how accuracy improves overtraining, what you could do is run a correlation, compute the correlation between why hat and why.
+
+> 그럴싸 하네.
