@@ -201,6 +201,13 @@
       - [SGD with momentum](#sgd-with-momentum)
       - [Why do they call it momentum?](#why-do-they-call-it-momentum)
     - [SGD with momentum](#sgd-with-momentum-1)
+    - [Optimizers (RMSprop, Adam)](#optimizers-rmsprop-adam)
+      - [RMSprop](#rmsprop)
+      - [RMS and variance](#rms-and-variance)
+      - [RMSprop](#rmsprop-1)
+      - [Adam](#adam)
+      - [The Adam math](#the-adam-math)
+      - [Optimizers galore!](#optimizers-galore)
 
 ## Math, numpy, PyTorch
 
@@ -5060,3 +5067,352 @@ When you're working with larger data sets, richer, more complex data sets, you w
 So you will find four more complicated data sets that are harder to categorize and for deeper, richer learning networks, you may never get to top performance using no momentum or very little momentum.
 
 So momentum with beta parameters that to somewhere around point nine or point nine five ish is not only going to allow the model to train faster, but will continue better performance right until the end.
+
+### Optimizers (RMSprop, Adam)
+
+> - Learn about RMS prop
+> - Also learn about Adam, the current best optimizer
+> - See that RMSprop and Adam are simply sensible extensions of the basic SGD algorithm
+
+Continuing with our discussion of optimizers used in deep learning in this video, I'm going to tell you about  RMSProp and Adam.
+
+Adam is generally considered to be the current best optimizer that we have available in deep learning and so many, many deep learning models that are employed in practice use the Adam Optimizer.
+
+Before I begin, I want to remind you of something I said a few videos ago, which is that these various optimizers, these are really just little tweaks.
+
+These are just minor extensions of the basic gradient descent algorithm.
+
+So once you understand gradient descent arms and Adam and momentum, these are not fundamentally different methods of learning.
+
+They are just extensions.
+
+They're just ways of making the gradient descent algorithm a little bit better and a little bit more adaptive.
+
+OK, so with that in mind, let us begin with a discussion of RMSprop.
+
+#### RMSprop
+
+![](.md/README.md/2023-07-21-08-32-40.png)
+
+First of all, what does this thing even stand for?
+
+Well, arms is for root mean square.
+
+I'm going to show you the formula for this on the next slide.
+
+And Prop is for propagation, like back propagation, 
+
+the idea of RMSProp is basically the same as the idea of momentum.
+
+And that idea is that we bias the weights by using dampened or weighted average versions of previous gradients.
+
+So we incorporate the past history of gradient information into the updating of the weights.
+
+Now rmsprop is different from momentum in that arms.
+
+Prop doesn't bias the gradient persay. It biases the learning rate according to the history of the magnitude of the gradient.
+
+So we are changing the learning rate when we are updating the weights according to the recent history of the magnitude of the gradients.
+
+OK, so I'm going to explain the arms prop algorithm in a moment.
+
+#### RMS and variance
+
+![](.md/README.md/2023-07-21-08-34-58.png)
+
+But first, a brief aside, just to show you the formulas for arms root mean square.
+
+So to compute root, mean square, you actually just follow this term backwards.
+
+So imagine X is our it's a variable.
+
+It's a vector of numbers that we want to compute rms over.
+
+So we just run through this backwards.
+
+First we square all of the elements and then we we take the mean.
+
+So we sum over all the elements and divide by and so square and then mean and then we take the square root for R.
+
+So this is the formula for arms here.
+
+I'm showing the formula for standard deviation.
+
+And what I want you to appreciate is that rms and standard deviation are not exactly the same, but they are really similar quantities.
+
+They're very closely related to each other.
+
+In fact, you can see that the formulas are nearly identical.
+
+The difference is that with standard deviation, we are subtracting the mean from each individual value,
+whereas we don't subtract the mean with arms.
+
+In fact, you can also see that if these data happened to be mean centered, if the mean is zero, then arms and standard deviation are exactly identical.
+
+Furthermore, variance is the same thing as standard deviation without this square root.
+
+So if you would just square this term square a standard deviation, you would get variance.
+
+![](.md/README.md/2023-07-21-08-36-57.png)
+
+So the interpretation of these two quantities is that arms reflects the total energy of a system.
+
+In our case, this is going to be the total energy of the gradients and standard deviation is the dispersion energy.
+
+OK, so here's the formula for rms.
+
+#### RMSprop
+
+![](.md/README.md/2023-07-21-08-37-29.png)
+
+And with that in mind, here is the formula for arms.
+
+Now, first, I would like you to look at this second equation and see that this is really, really similar to the standard vanilla classical traditional gradient descent algorithm.
+
+So we update the weights according to themselves, minus the learning rate times, the derivative of a cost function or the loss function.
+
+So this part is the same as gradient descent.
+
+The new thing here, what we are adding arms, is that we are scaling the learning rate according to the square root of this term. V Now don't worry about this epsilon here.
+
+This is set to be a small number, a small positive number.
+
+And the idea of adding this epsilon is just to make sure that this denominator never accidentally becomes zero.
+
+So we just add a tiny, tiny number just to make sure we don't get any problems dividing by zero.
+
+OK, so this is just for numerical problems.
+
+OK, so so then we have the square root of V, so what is V?
+
+V is defined as a weighted average of the derivative or the gradient of the cost function squared from previous time steps, so very similar to what we saw with momentum, where we we took this value V, we set it to be equal to the gradient of the cost function here with rms.
+
+We are squaring this term. So here we are.
+
+So this is like a weighted sum here.
+
+And then we're squaring and then here we take the square root.
+
+So that's how we get to rms or root mean squared.
+
+So what is the idea?
+
+![](.md/README.md/2023-07-21-08-39-57.png)
+
+The idea here is that the step size or the learning rate for adjusting the weights is dependent on or influenced by the recent history of gradient magnitudes.
+
+So when the square term here, when these magnitudes get larger and larger, then this denominator here is large, gets relatively large, which means that the learning rate is going to shrink.
+
+Conversely, when the gradient is very small or the magnitude of the gradient, the total energy of the gradient over time is very small.
+
+Then this term gets smaller, which means that this term, the entire term gets larger.
+
+So we're going to be taking larger steps.
+
+And the idea is that if the gradients are really large, then learning is very volatile.
+
+It's changing too fast.
+
+So therefore we want to slow down the learning so we're not getting such huge steps each time we train a new batch of data.
+
+Conversely, if the gradients are getting really, really tiny, then it means we are in danger of having a vanishing gradient problem.
+
+So therefore we want to speed up learning a little bit more to take slightly larger steps.
+
+So that's the idea.
+
+The learning rate gets modulated according to the total energy of the history of the cost function,
+the recent weighted history of the cost function or the gradient of the cost function.
+
+OK, now here I'm using the term V because this is the letter that I used a couple of videos ago when I introduced momentum.
+
+Now I'm going to rewrite exactly this formula.
+
+Just using the letter s the formula is exactly the same.
+
+![](.md/README.md/2023-07-21-08-42-04.png)
+
+I'm just changing the V into an S, and that is because I'm going to integrate this equation with Adam
+in a few slides from now.
+
+So same thing.
+
+Just replace the V'S with S's again.
+
+The idea is that we are scaling the learning rate according to the history of the energy in the gradient.
+
+A few more notes about rms prop.
+
+![](.md/README.md/2023-07-21-08-42-57.png)
+
+Remember that this gradient term here, this is actually a collection of numbers for each weight.
+
+So this is not just one single number.
+
+This is a partial derivative for each direction in our error space, which means each weight in the layer that we are currently updating.
+
+So that means that arms actually adjusts the learning rate dynamically for each weight.
+
+So each weight is actually going to get its own learning rate in some sense.
+
+And that is pretty remarkable because it means that rms prop and also the the atom optimizer that all show in the next slide arms prop is actually pretty robust to the initial learning rate.
+
+So the learning rate is changing over the course of training, even though you are not specifically changing the learning rate yourself.
+
+So this is the rms prop optimizer.
+
+#### Adam
+
+![](.md/README.md/2023-07-21-08-44-15.png)
+
+And now I'm going to tell you about the Adam optimizer.
+
+But first, I just want to clarify a little bit of terminology.
+
+So in a deep learning context, Adam stands for is short for adaptive momentum.
+
+And you will see in a moment why we call it adaptive momentum outside of the context of deep learning.
+
+It's a it's a male name.
+
+And if your name is Adam, then that's great.
+
+
+You're always picked first in school because your name starts with a the only better name that Adam is Erin, anywhere outside of these contexts.
+
+Adam is also an abbreviation for Amsterdam, which is the beautiful and vibrant Dutch city.
+
+OK, anyway, enough about that.
+
+Let's see.
+
+So now I'm going to introduce Adam.
+
+![](.md/README.md/2023-07-21-08-45-20.png)
+
+The formulas look not super complicated, but a little bit involved.
+
+But the idea of the Adam optimizer is super duper simple.
+
+All we do is combine momentum, which you learned about two videos ago and arms prop, which you just learned about now.
+
+So we combine these two developments in optimizers into one optimizer.
+
+It does mean that we have some more formulas.
+
+There's a couple of additional parameters.
+
+But I want you to keep in mind that Adam is just a combination of momentum plus arms prop and it's really just an extension of gradient descent.
+
+#### The Adam math
+
+![](.md/README.md/2023-07-21-08-46-39.png)
+
+I would like you to first look at this third equation here and see that it's basically just gradient descent.
+
+So we update the weights according to. Themselves, minus the learning rate times this quantitive, it's actually v v tilda.
+
+I'll talk about the Tilda's in a moment.
+
+Times V now V is the term from momentum.
+
+So that is the recent weighted history of the gradient of the cost function.
+
+So its previous values of the cost function that are exponentially weighted.
+
+So it's just a way to add some of the history of the gradient.
+
+That's how we update.
+
+And then the learning rate itself gets updated according to this term s, which comes from rms.
+
+So here we are dividing or scaling the learning rate according to the weighted history of the energy or the variance, the root mean square of the gradient of the cost function.
+
+So one way to think of this is that the atom optimizer is combining the average the history of the averages of the gradients with the history of the variance or the energy, the dispersion of the gradients.
+
+So not only are we adaptively changing the gradient that we learn from, we are also adaptively changing the learning rate that we use to scale the gradients.
+
+Now you can see there's quite a few parameters floating around here.
+
+There's beta one for momentum, beta two for arms up.
+
+And then there's eta here for the learning rate.
+
+![](.md/README.md/2023-07-21-08-49-24.png)
+
+![](.md/README.md/2023-07-21-08-54-45.png)
+
+So typical values are to set eta to be point o o one beta, one to be point nine and beta two to point nine nine nine.
+
+And it's Epsilon term here is set to ten to the minus eight here.
+
+I'm showing it in scientific notation how it would be expressed in Python.
+
+And again, this is not part of the learning.
+
+This is a constant that we add just to make sure that this term or in case this term goes to zero or some number that's numerically indistinguishable from zero, we're never going to run into a problem of dividing by zero.
+
+OK, so there's still one missing piece of information here, which is what is the difference between V and V, Tilde and S and S tilda?
+
+![](.md/README.md/2023-07-21-08-55-36.png)
+
+So these are correction factors or corrected terms and all we do is divide V and S by one minus the corresponding beta parameter.
+
+So B to the power of T.
+Now let me just make sure this is clear.
+
+This subscript T corresponds to the training or the trial, the step in the epoc that you are training.
+
+So typically we train for, let's say, 500 epocs or two hundred epocs, a thousand epocs.
+
+So this t here corresponds to the current training epoc and and so then this is power.
+
+So on training apoc one, this is literally Beita to the power of one which is just beta and then on training epoc one hundred.
+
+This is beta to the power of one hundred.
+
+So the idea of adding this correction factor is that these terms get smaller and smaller as we go through training.
+
+So in the beginning of training, beta one is set to point nine.
+
+So in the first iteration of training, this denominator here is point one, which means that this term is relatively large.
+
+So in the beginning of learning, in the beginning of training, we take larger steps.
+
+And then as we get to, you know, let's say this, we are at training epoc one thousand.
+
+So point nine to the power of 1000 is some very small number.
+
+It's something very close to zero, which means that the denominator here is close to one, which means
+
+that this term here is relatively small compared to how it was in the beginning.
+
+Again, the bias correction factor means that we are doing more learning.
+
+We're taking larger steps in the beginning of training, and we take smaller steps as we go towards the end of training.
+
+#### Optimizers galore!
+
+![](.md/README.md/2023-07-21-08-58-05.png)
+
+So now you know about the standard gradient vanilla descent, the momentum, the rms prop and the Adam optimizers.
+
+Those are not the only possible optimizers that are available.
+
+There are quite a few other optimizers that have been proposed in general.
+
+As I mentioned in the beginning of this video, Adam is considered to be the current best.
+
+So you can basically just stick to Adam without losing too much sleep about it.
+
+Of course, it's always good to explore different kinds of optimizers, different algorithms, but you're not going to go wrong if you're using Adam.
+
+That said, stochastic gradient descent is still a, I should say, vanilla sort of classic old school gradient descent is still a great algorithm.
+
+And you might actually find that it's better or faster when you have relatively small models or simple homogenous datasets that are easier to learn.
+
+So you don't always need the added complexity of the Adam optimizer.
+
+It's always important to keep in mind with any rapidly developing field, deep learning or any any other field, that what is currently thought to be the best is not necessarily always going to be the best.
+
+So it's good to keep an open mind and an open eye and just be aware of developments in the Optimizers area.
