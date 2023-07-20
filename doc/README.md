@@ -171,6 +171,8 @@
     - [Activation functions in PyTorch](#activation-functions-in-pytorch)
       - [Differences between torch and torch.nn](#differences-between-torch-and-torchnn)
     - [Activation functions comparison](#activation-functions-comparison)
+    - [CodeChallenge: Compare relu variants](#codechallenge-compare-relu-variants)
+      - [What to do](#what-to-do-2)
 
 ## Math, numpy, PyTorch
 
@@ -3162,3 +3164,64 @@ class ANNwine(nn.Module):
 ![](.md/README.md/2023-07-20-06-57-12.png)
 
 > 👉 Batch Norm 을 적용하면 Test Accuracy 를 좀더 올릴수 있다.
+
+### CodeChallenge: Compare relu variants
+
+> - Adapt the code to work with torch.nn activation functions
+> - See a direct comparison of three ReLU variants
+
+![](.md/README.md/2023-07-20-08-55-36.png)
+
+#### What to do
+
+- Copy the code from the previous video : [DUDL_metaparams_ActivationComparisons.ipynb](../metaparams/DUDL_metaparams_ActivationComparisons.ipynb)
+- Modify the code to compare ReLU, ReLU6, and Leaky_ReLU.
+- Use activation functions in torch.nn instead of torch
+- If you get stuck, consult the code from the video "Acivation functions in PyTorch".
+
+So now is the time to pause video switch to Python, start working through this code challenge on your own.
+
+[DUDL_metaparams_CodeChallengeRelus.ipynb](../metaparams/DUDL_metaparams_CodeChallengeRelus.ipynb)
+
+![](.md/README.md/2023-07-20-09-06-08.png)
+
+```python
+class ANNwine(nn.Module):
+  def __init__(self,actfun):
+    super().__init__()
+
+    ### input layer
+    self.input = nn.Linear(11,16)
+    
+    ### hidden layers
+    self.fc1 = nn.Linear(16,32)
+    self.fc2 = nn.Linear(32,32)
+
+    ### output layer
+    self.output = nn.Linear(32,1)
+
+    # activation funcion to pass through
+    self.actfun = actfun
+  
+  # forward pass
+  def forward(self,x):
+    # get activation function type
+    # this code replaces torch.relu with torch.<self.actfun>
+    actfun = getattr(torch.nn,self.actfun)
+    x = actfun()( self.input(x) )
+    x = actfun()( self.fc1(x) )
+    x = actfun()( self.fc2(x) )
+    return self.output(x)
+```
+
+```python
+activation_funs = [ 'ReLU', 'ReLU6', 'LeakyReLU' ]
+
+trainByAct = np.zeros((numepochs,len(activation_funs)))
+testByAct  = np.zeros((numepochs,len(activation_funs)))
+
+for ai,actfun in enumerate(activation_funs):
+  # create a model and train it
+  winenet = ANNwine(actfun)
+  trainByAct[:,ai],testByAct[:,ai],losses = trainTheModel()
+```
