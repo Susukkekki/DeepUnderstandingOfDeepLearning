@@ -4967,3 +4967,96 @@ OK, so you can see the idea of momentum.
 It's just going to smooth out all of these rough edges that we are getting from stochastic gradient descent.
 
 ### SGD with momentum
+
+[DUDL_metaparams_momentum.ipynb](../metaparams/DUDL_metaparams_momentum.ipynb)
+
+```python
+# create a class for the model
+def createTheQwertyNet(momentum):
+
+  class qwertyNet(nn.Module):
+    def __init__(self):
+      super().__init__()
+
+      ### input layer
+      self.input = nn.Linear(2,8)
+      
+      ### hidden layer
+      self.fc1 = nn.Linear(8,8)
+
+      ### output layer
+      self.output = nn.Linear(8,3)
+
+    # forward pass
+    def forward(self,x):
+      x = F.relu( self.input(x) )
+      x = F.relu( self.fc1(x) )
+      return self.output(x)
+  
+  # create the model instance
+  net = qwertyNet()
+  
+  # loss function
+  lossfun = nn.CrossEntropyLoss()
+
+  # optimizer (note extra input!)
+  optimizer = torch.optim.SGD(net.parameters(),lr=.01,momentum=momentum)
+
+  return net,lossfun,optimizer
+```
+
+![](.md/README.md/2023-07-21-07-15-22.png)
+
+아래 코드 추가하 다시 실행하면
+
+```python
+ax[0].set_ylim([0, 2])
+```
+
+![](.md/README.md/2023-07-21-07-16-04.png)
+
+So here we see so ignoring the purple line here we see that in general, the model does a good job for all of these parameters. Eventually, the losses converge.
+
+They all get small.
+
+Here we see the training and test accuracy again.
+
+They all do, except for the Purple Line.
+
+They're all doing pretty well.
+
+We we get up to around 90 percent accuracy for train and maybe eighty, eighty eight something percent accuracy for test.
+
+But that's noticeably different for the different values of momentum.
+
+So with momentum of zero, which means no momentum, just vanilla gradient descent, we get, you know, kind of decent learning trajectory, but it's relatively slow.
+
+And then we increase the beta a little bit more and we increase the beta to around point nine and point nine five.
+
+And now you see the model is training much faster.
+
+In fact, it looks like with momentum we only really need, you know, maybe five training epochs in total to get the model to be really good.
+
+So this experiment actually worked out really well.
+
+The conclusions that we can draw from this experiment are great, and those conclusions are that having no momentum whatsoever is fine.
+
+That's not necessarily bad.
+
+Adding some momentum is good.
+
+The more momentum we add, the larger the beta parameter, the better we get, the faster the training becomes.
+
+Until we get to some point where the beta parameter is so large that we are not even effectively learning anymore.
+
+So then the performance gets really awful.
+
+In fact, the accuracy here is around thirty three percent, which with three categories, means we are literally performing at chance here now because this data set is relatively easy to learn.
+
+What we see is that all of the momentum values give equal performance by the end.
+
+When you're working with larger data sets, richer, more complex data sets, you will actually find that this difference here, which we only see early in the training, continues up until the end.
+
+So you will find four more complicated data sets that are harder to categorize and for deeper, richer learning networks, you may never get to top performance using no momentum or very little momentum.
+
+So momentum with beta parameters that to somewhere around point nine or point nine five ish is not only going to allow the model to train faster, but will continue better performance right until the end.
