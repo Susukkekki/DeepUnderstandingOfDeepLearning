@@ -3354,6 +3354,6 @@ def trainTheModel():
 
 하지만 다음 코멘트를 하긴 함.
 
-Now, if you want a measure of accuracy within the training to see how accuracy improves overtraining, what you could do is run a correlation, compute the correlation between why hat and why.
+Now, if you want a measure of accuracy within the training to see how accuracy improves over training, what you could do is run a correlation, compute the correlation between why hat and why.
 
 > 그럴싸 하네.
