@@ -176,6 +176,22 @@
     - [CodeChallenge: Predict sugar](#codechallenge-predict-sugar)
       - [Background: What makes a sugary wine?](#background-what-makes-a-sugary-wine)
       - [Solution](#solution)
+    - [Loss functions](#loss-functions-1)
+      - [Reminder of why we need losses](#reminder-of-why-we-need-losses)
+      - [Loss functions](#loss-functions-2)
+      - [Cross-entropy loss](#cross-entropy-loss)
+      - [Binary vs. multiclass cross-entropy](#binary-vs-multiclass-cross-entropy)
+      - [Other loss functions - Kullback-Leibler divergence](#other-loss-functions---kullback-leibler-divergence)
+      - [Output layer architectures](#output-layer-architectures)
+      - [Sigmoid vs . Softmax](#sigmoid-vs--softmax)
+      - [Softmax vs. log-softmax](#softmax-vs-log-softmax)
+    - [Loss functions in PyTorch](#loss-functions-in-pytorch)
+      - [Mean-squared error](#mean-squared-error)
+      - [Binary cross-entropy](#binary-cross-entropy)
+      - [Categorical cross-entropy](#categorical-cross-entropy)
+      - [Creating your own custom loss function](#creating-your-own-custom-loss-function)
+    - [More practice with multioutput ANNs](#more-practice-with-multioutput-anns)
+      - [Haven't we already done multiclass ANNs?](#havent-we-already-done-multiclass-anns)
 
 ## Math, numpy, PyTorch
 
@@ -3357,3 +3373,1136 @@ def trainTheModel():
 Now, if you want a measure of accuracy within the training to see how accuracy improves over training, what you could do is run a correlation, compute the correlation between why hat and why.
 
 > 그럴싸 하네.
+
+### Loss functions
+
+> - More about the commonly used loss functions
+> - How to create the output-layer architecture
+> - The relationship between sigmoid and softmax
+
+Of course, you already know about lost functions, what they are, why we need them, and how they
+are used to train deep learning models.
+
+So part of this lecture is going to be a little bit of a refresher, a bit of a reminder about lost functions and commonly use lost functions.
+
+But there also are will be several new pieces of information in this video, including, for example, the relationship between sigmoid and softmax.
+
+Another kind of lost function is their modification called log soft max.
+
+And I'm also going to talk more about the output layer of your deep learning models.
+
+#### Reminder of why we need losses
+
+![](.md/README.md/2023-07-20-17-45-39.png)
+
+So just by way of a quick reminder, we need losses to train the models.
+
+So this row here represents the forward pass of the data going through the model.
+
+So each node, each unit in the model computes this, which is a linear function.
+
+So it's the input transpose times, the weight.
+
+So it's a linear weighted combination of the inputs.
+
+And then that passes through a sigma function, which is a nonlinear activation function.
+
+You now know all about these functions and eventually that goes through to the final model output.
+
+Which is our prediction about something about the real world.
+
+And then we have to compare this y hat, the prediction of the model against the actual real world data, which we call y.
+
+And that difference between y hat and y is the difference between what the model thinks is going on
+in the outside world and what is actually measured from the outside world.
+
+That difference is the lost function, and then the lost function is used to update the weights.
+
+Actually, technically, we don't use the lost function.
+
+We use the derivative of the lost function, and it's the derivative of the lost function with respect to the weights, which tells us how this lost function changes as a function of changes in our weight parameters.
+
+And then we take that derivative of the lost function, which is actually called a gradient because it's a multidimensional derivative.
+
+So the gradient of the loss gets multiplied by a learning rate, which we typically call eta Greek letter eta.
+
+And the point of the learning rate is just to scale the gradient down so that we're taking small steps in the right direction, and then this gets subtracted off in the weights, and that gives us our new weights which replace these weights for the forward pass and so on.
+
+And of course, the goal is to adjust the weights such that the difference between the model prediction y hat and the real data outcome, which is why is as small as possible.
+
+#### Loss functions
+
+![](.md/README.md/2023-07-20-17-46-05.png)
+
+Now you also know that in general there are two kinds of lost functions that are most commonly used in deep learning.
+
+These are not the only lost functions.
+
+In fact, I will talk more about different loss functions later on in the course, but most of the time most of the models that you use are sum something like mean square error or maybe a little bit of a variant of mean squared error.
+
+For example, there is the mean absolute error where instead of squaring the difference, you would take the absolute value of the difference.
+
+It's kind of a distinction between L1, L2 based learning, but well, mean square  Error is very popular, is used for continuous data when the output is a numerical prediction and the observed data values can take on a range of numerical values like height or weights or salary or house price or something like that.
+
+And then we have this other kind of lost function, which is cross entropy or is sometimes called the logistic error function.
+
+This is used for categorical data and then the output of the model is converted into a probability, and this is the probability of some category taking place. 
+
+So the patient has the disease or doesn't have a disease.
+
+There's a cat or not a cat in the picture and so on.
+
+This formula here shows binary cross entropy, but actually this is just a simplification of the full formula for categorical cross entropy.
+
+And I haven't actually discussed that in a lot of detail.
+
+So so let me talk a little bit more about this kind of lost function.
+
+#### Cross-entropy loss
+
+![](.md/README.md/2023-07-20-17-48-29.png)
+
+So here I have again the formula for binary cross entropy, exactly as I showed in the previous slide.
+
+Here's a drawing of what the binary cross entropy so BCE loss function looks like. So what the magnitude of the loss is for y equals zero and y equals one.
+
+So again, this would be, you know, the patient does not have the disease.
+
+This would be the patient does have the disease.
+
+And here we have the model output y hat.
+
+So this is the model's prediction about whether the patient has the disease.
+
+And the main point to see here is that when these are congruent<sup>크기와 형태가 동일한, 합동의, 알맞은, 적절한</sup>, when the model makes a prediction that is the same or similar to the real world outcome, the loss is small.
+
+So you see that over here.
+
+For example, the model predicts a probability of zero and the outcome was actually zero.
+
+So therefore the model was was correct or, you know, very close to being correct.
+
+And the loss is very small and that you see over here as well.
+
+So the the true value in the world was y equals one.
+
+The model predicts y equals or y, hat equals something close to one.
+
+And then we have a very small loss.
+
+And when there is a mismatch, you see a large loss.
+
+So the true state of the world is y equals zero, but the model predicts that y hat is close to one.
+
+So then we get a very large loss.
+
+You can see also these are nonlinear functions.
+
+So the loss increases quite quickly when the model is really, really wrong and when the model is sort of kind of wrong but not really going in the right direction, then the loss is actually smaller.
+
+Okay.
+
+So this is binary cross entropy.
+
+This is used when there are only two possible answers.
+
+An extension of binary cross entropy. Or you could also say that binary cross entropy is a simplification of categorical cross entropy, which is also sometimes called negative log likelihood.
+
+This is used with one hot encoding basically when you have multiple categories.
+
+![](.md/README.md/2023-07-20-17-52-04.png)
+
+The N here is for nodes the number of of output or units in your output layer, and C is the number of categories.
+
+Now, it might look initially like this formula for categorical cross entropy and this formula for binary cross entropy are different.
+
+They might seem like different functions, but in fact they really are the same.
+
+#### Binary vs. multiclass cross-entropy
+
+![](.md/README.md/2023-07-20-17-53-01.png)
+
+And to do this, I would like you to get a piece of paper and write rewrite this formula here, assuming n equals one, which means one output node and C equals two, which means two categories.
+
+So C equals two.
+
+Here, and just ignore this term here and now.
+
+You also have to appreciate that when there are only two categories, you have y one and y two.
+
+But y two is exactly equal to one minus y one.
+
+So for example, the probability that it rains today is equal to one minus the probability that it doesn't rain.
+
+So these probabilities are exact complements of each other.
+
+Okay, so.
+
+So write out this equation.
+
+Write out the whole sum using y two equals one minus y one.
+
+And you will discover that you arrive at this formula here.
+
+By the way, you know, it's probably easier just to drop the minus signs, just to make, you know, you don't have to worry about the minus sign here.
+
+Now, we also discussed that with categorical data.
+
+The Y's are either zero or one.
+
+The Y hats, of course, are not zero or one.
+
+There are any numerical value between zero and one because these are the probabilities that the model outputs.
+
+The Y is the true state of the world.
+
+It either did or didn't rain on this particular day.
+
+So this term could be zero.
+
+Y could be zero, which simplifies things quite a bit because then, you know, this whole term drops out here and then you also don't need to worry about this.
+
+This just becomes the log of one minus y hat.
+
+So mean squared error and cross entropy error.
+
+Those are the two most common error functions.
+
+#### Other loss functions - Kullback-Leibler divergence
+
+![](.md/README.md/2023-07-20-17-55-33.png)
+
+I just very briefly want to mention another lost function here.
+
+This is called the Kullback-Leibler divergence.
+
+It's usually just shortened to KL divergence, sometimes also called KL distance.
+
+This is a lost function that you use when you have two probability distributions and you want to measure the distance or the difference between those probability densities.
+
+![](.md/README.md/2023-07-20-17-56-32.png)
+
+So here we have two probability functions and they certainly look different.
+
+They look like they are different from each other.
+
+And this is the formula.
+
+Not going to go into too much detail about this.
+
+This is a lost function that you would use, for example, in variational auto encoders when you're explicitly modeling probability distributions, but otherwise you don't need to worry about this too much.
+
+I just wanted to mention it for completeness.
+
+#### Output layer architectures
+
+![](.md/README.md/2023-07-20-17-57-37.png)
+
+Now I'd like to talk more about the output layer and how to design your output layers.
+
+Again, this is going to start off as a little bit of a review, but it's also going to lead into a more in-depth discussion that I hope you find new and insightful.
+
+So when you are predicting continuous data, then the output layer has one unit with a linear activation function which can actually just be no activation function.
+
+This could be just the identity function here.
+
+And then of course use mean squared error loss function.
+
+So this is for predicting continuous data.
+
+![](.md/README.md/2023-07-20-17-58-38.png)
+
+When you're doing binary classification, then the output layer also has one unit just like with continuous data.
+
+But here you have a sigmoid activation function and here you would be using cross entropy loss, in particular a binary cross entropy loss binary of course, because we are working with binary classification
+
+something is the output is either zero or one, true or false fail or path and so on.
+
+![](.md/README.md/2023-07-20-17-59-15.png)
+
+And then we get to multiclass or multi-way classification here.
+
+This is starting to look different here you have an output layer with N units that correspond to your and different possible classifications.
+
+So for example, if you are categorizing an image as containing a cat or a dog or a badger or a giraffe, then that's four options.
+
+So then you would have four output units in the output layer.
+
+You would use cross entropy loss function or categorical cross entropy loss, and you need to use a soft max activation function.
+
+So the raw outputs of your output layer, your four nodes get passed into a soft max machine.
+
+Remember earlier in the course, I call that the Soft Maximizer.
+
+Now, it might seem strange that we use a sigmoid for binary classification and soft max for multiclass classification.
+
+That might seem strange because I just argued a moment ago that categorical cross entropy and binary cross entropy are really exactly the same thing.
+
+This is just a simplification of this.
+
+So why do we use a completely different activation function for binary classification versus multi categorical classification?
+
+#### Sigmoid vs . Softmax
+
+Well, it turns out that sigmoid and softmax are really not that different.
+
+So it turns out that these softmax function when you have exactly two categories, is the same thing as the sigmoid function.
+
+So to illustrate that to you, let's go back and look at these formulas correctly.
+
+![](.md/README.md/2023-07-20-18-02-24.png)
+
+So here was the formula for the softmax function.
+
+And now I'm going to write this out, just assuming that there are exactly two categories.
+
+![](.md/README.md/2023-07-20-18-03-55.png)
+
+So I'm going to call this E to the A divided by its the a plus E to the B, so a and B are just our two categories.
+
+Here are the activation output functions for our two categories, A and B.
+
+Okay.
+
+And now I'm going to do something that initially might seem strange, but it will lead us to the conclusion that soft Macs is the same thing as sigmoid for two options.
+
+I'm going to replace all of these terms with themselves minus A, so I'm just going to subtract a from every term in the exponentials up here.
+
+![](.md/README.md/2023-07-20-18-04-26.png)
+
+So we have E to the A minus, a E to the A minus A and E to the B minus a, so e to the A, minus A,
+
+here and here is E to the zero and any number to the power of zero is one.
+
+![](.md/README.md/2023-07-20-18-05-02.png)
+
+So these two terms can be replaced with E to the zero, which is one.
+
+And then here we can just flip this thing around and say that this is equal to.
+
+So for two classes, this soft max function is actually equal to one divided by one plus E to the minus X.
+
+And this is exactly the sigmoid function.
+
+This is the form of the sigmoid function.
+
+So that means that having a sigmoid for binary classification and using softmax for multiclass categorization,
+these are not really different functions.
+
+The sigmoid is just a simplification.
+
+It just reduces the total number of computations that we don't need for doing binary categorization.
+
+So now you might wonder, you know, why don't we just keep using sigmoid?
+
+Why don't we just attach a sigmoid to the end of every node in the output layer?
+
+Why do we need to even worry about these softmax?
+
+![](.md/README.md/2023-07-20-18-06-10.png)
+
+Well, it turns out that the sigmoid for multiclass categorization does not create a probability distribution.
+
+I've also discussed this earlier.
+
+In the course, the sigmoid is going to give us a number between zero and one, but the numbers that those numbers are only going to sum to one when there are exactly two categories.
+
+And the one category is defined as the opposite of the other category, like the probability that it rains today is one minus the probability that it doesn't rain today.
+
+So if you have multiple categories, then putting each of them into a sigmoid independently is not going to give a probability distribution.
+
+But the softmax function, of course, guarantees that all of the numbers sum to one, which means we can interpret them as a probability distribution.
+
+Furthermore, the sigmoid function not only rewards correct responses, it also penalizes incorrect responses.
+
+So that facilitates learning in the model, because the model is learning not only the good things to do, but it's also learning to avoid the bad things or the incorrect decisions.
+
+Okay, so that's about sigmoid versus SOFtmax.
+
+#### Softmax vs. log-softmax
+
+I now want to introduce you to a flavor of SOFtMax, a variant of the soft max learning rule, which is to use log soft Max.
+
+![](.md/README.md/2023-07-20-18-08-24.png)
+
+This is a screenshot from the lecture on logarithms in the math section.
+
+And remember here I said that logs get increasingly negative, so large magnitude negative as the x value, which now we can call the probability value is getting smaller and smaller, closer to zero.
+
+So it kind of stretches out the lower scale as we approach zero for probability values.
+
+So the difference between soft max and log soft max is you probably guessed it by now.
+
+![](.md/README.md/2023-07-20-18-10-09.png)
+
+You just take soft Max, you compute regular soft max, and then you take the log of all the probabilities instead of just working with the probability values themselves.
+
+This has a couple of advantages.
+
+It increases the sensitivity to discriminate between different decisions, different categories. At small probabilities.
+
+And it also means that logs off max gives a stronger penalty for errors compared to regular soft max.
+
+So in practice, in deep learning, you can think about using soft max. But in reality, when it comes to code, you're basically always going to want to use the log soft max function.
+
+### Loss functions in PyTorch
+
+> - How to implement commonly used loss functions in PyTorch
+> - How to create a custom loss function
+
+In this video, we are going to explore the lost functions in PyTorch, or at least the commonly used lost functions in PyTorch.
+
+And then at the end of the video, I will also show you how to create your own custom lost function.
+
+Now, this is not something you would normally do normally If you are using a standard lost function like MSE or BCE, you don't need to write your own lost function.
+
+But I think it's nice to know that it's possible to create your own lost function and to see how it's done.
+
+All right.
+
+So let's switch to PyTorch and get started.
+
+[DUDL_metaparams_loss.ipynb](../metaparams/DUDL_metaparams_loss.ipynb)
+
+Because we are just going to focus on the lost functions in PyTorch, which we don't actually need to build any models, we don't need to worry about data or anything like that.
+
+So we're only going to import a couple of libraries and mainly just.
+
+OK, so let's see.
+
+#### Mean-squared error
+
+```python
+# loss function
+lossfunMSE = nn.MSELoss()
+
+# create predictions and real answer
+yHat = torch.linspace(-2,2,101)
+y = torch.tensor(.5)
+
+# compute MSE loss function
+L = np.zeros(101)
+for i,yy in enumerate(yHat):
+  L[i] = lossfunMSE(yy,y)
+
+plt.plot(yHat,L,label='Loss')
+plt.plot([y,y],[0,np.max(L)],'r--',label='True value')
+plt.xlabel('Predicted value')
+plt.legend()
+plt.show()
+```
+
+We're going to start by examining mean squared error in more detail.
+
+So here I'm creating our lost function is actually an instance of this class nn.MSELoss.
+
+And I'm just calling it lossfunMSE.
+
+So here I'm creating a variable yHat.
+
+Now this is linearly spaced numbers from minus two to plus two, but this is simulating the different outputs, the different possible outputs that your model can give.
+
+Of course, when you run this model through one data point, you input one data observation into the model.
+
+It's only going to give a single Y hat.
+
+So this would be like if you ran through a hundred different data points, you would get 101 different data points, you would get one hundred and one different Y hat values.
+
+And let's say that in this case, the correct value is zero point five.
+
+OK, and then here I'm computing the loss for each one of these values.
+
+So notice that we input we provide two inputs to the lost function yy, which is actually just one of the elements in Y hat.
+
+So the output of the model and Y itself, which is the true value of what we actually measured in the outside world.
+
+Now Y is actually staying the same inside this for loop.
+
+I'm only varying yy the model prediction.
+
+So this is going to show us the lost function for different model outputs, given that the true value is zero point five.
+
+OK, and then here we do some plotting.
+
+![](.md/README.md/2023-07-20-18-19-12.png)
+
+So what is the first thing that you notice when you look at this function?
+
+Well, I hope you're immediately thinking that it's a it's a parabola.
+
+It's a it's the function X squared.
+
+It looks like X squared.
+
+In fact, it doesn't just look like X squared.
+
+That is exactly what the Mzee lost function is.
+
+We can also see that by looking at the dock string here and this says creates a criterion, which is another name for lost function that measures the mean squared error or squared L2 norm between each element in the input X and the target Y.
+
+All right.
+
+So so then you see that the loss is smallest at zero point five, which corresponds to our true value, our measured value from the outside world, a target value that the model wants to be working towards.
+
+So the further we are from the true value of point five, the larger the loss is.
+
+So the model is going to learn more from this loss and it's going to learn less from this loss because it's closer.
+
+OK, so that's a mean squared error.
+
+#### Binary cross-entropy
+
+```python
+# loss function
+lossfunBCE = nn.BCELoss()
+
+# create predictions and real answer
+yHat = torch.linspace(.001,.999,101)
+y1 = torch.tensor(0.)
+y2 = torch.tensor(1.)
+
+# compute MSE loss function
+L = np.zeros((101,2))
+for i,yy in enumerate(yHat):
+  L[i,0] = lossfunBCE(yy,y1) # 0 is the correct answer
+  L[i,1] = lossfunBCE(yy,y2) # 1 is the correct answer
+
+plt.plot(yHat,L)
+plt.xlabel('Predicted value')
+plt.ylabel('Loss')
+plt.legend(['correct=0','correct=1'])
+# plt.yscale('log')
+plt.show()
+```
+
+Let's talk a little bit about binary cross entropy.
+
+Here I am creating the lost function.
+
+Again, this is an instance of a class nn.BCELoss.
+
+And now here this is pretty similar to what we just did above, except now the outputs have to be simulated as varying between zero and one, because these are going to be the sigmoid outputs from the model for binary classification.
+
+So and then I'm just avoiding the number zero here.
+
+So a very small number up to something that's very close to one.
+
+And now here I'm simulating two possible target values.
+
+Y one and Y two corresponding to zero and one.
+
+And the rest of this code is, you know, it's basically the same as the code above just with a different lost function and not surprising.
+
+![](.md/README.md/2023-07-20-18-25-16.png)
+
+This shows exactly the plot that I showed in the slides in the previous video.
+
+Again, the idea here is that when there is a match or a close match between the model prediction and the true state of the world, we get a small loss so that you see here, the true state of the world is zero and the model predicts zero.
+
+And here the true state of the world is one and the model predicts one or something close to one. And the loss is small.
+
+And when there's a mismatch between them, the loss is large and the larger the mismatch, the larger that loss.
+
+And here I put this y axis scale option in a comment.
+
+```python
+plt.plot(yHat,L)
+plt.xlabel('Predicted value')
+plt.ylabel('Loss')
+plt.legend(['correct=0','correct=1'])
+plt.yscale('log')
+plt.show()
+```
+
+![](.md/README.md/2023-07-20-18-28-27.png)
+
+This is just if you're curious to see what this function looks like with logarithmic scaling.
+
+OK, so here I have defined the model outputs, the output of the model already to be in the range of zero to one.
+
+But of course I've mentioned many times before that we don't actually use BCEloss and explicitly converting to probability using a sigmoid function.
+
+But I just want to demonstrate to you what happens if you try to use the BCE lost function using a Y hat value.
+
+So the output of a model Without transforming it to sigmoid.
+
+So here we are going to say that the model output was to just the numerical value of two and then compute the lost function.
+
+```python
+# The example above shows data already in probabilities. Raw outputs will need to be converted to probabilities:
+
+# "raw" output of a model
+yHat = torch.tensor(2.)
+print(lossfunBCE(yHat,y2))
+
+# convert to prob via sigmoid
+sig = nn.Sigmoid()
+print(lossfunBCE( sig(yHat) ,y2))
+```
+
+And when we tried to run it, we get an error.
+
+And the error message is that all elements of the input should be between zero and one.
+
+So this would need to be converted into a this here.
+
+This would need to be converted into a sigmoid pass through the sigmoid function in order to run a line of code like this.
+
+```python
+# "raw" output of a model
+yHat = torch.tensor(2.)
+# print(lossfunBCE(yHat,y2))
+
+# convert to prob via sigmoid
+sig = nn.Sigmoid()
+print(lossfunBCE( sig(yHat) ,y2))
+```
+
+Some comment that and that's what you see here.
+
+So here I have the sigmoid function equals the instance of this module and sigmoid and then we can pass the Y hat value, which we're specifying to be two through the sigmoid function, and that is going to convert that into a number between zero and one.
+
+And then we can compare it to the target value of Y two.
+
+So then we got a result here.
+
+OK, now I've mentioned before that PyTorch recommends using a function that incorporates the sigmoid function and BCE and that is called BCEWithLogitsLoss.
+
+So let me now illustrate that to you.
+
+```python
+# Thus, the recommended way to do it:
+lossfunBCE = nn.BCEWithLogitsLoss()
+yHat = torch.tensor(2.)
+print(lossfunBCE(yHat,y2))
+```
+
+You can see here this is set up pretty similar to the to this example right here.
+
+Right.
+
+Specify why had to be the numerical value of two.
+
+And in fact, they don't even need to repeat this line here and the target value Y two.
+
+Now, here I'm inputting the number two.
+
+This is exactly what gave us that error message in the previous code.
+
+So but here we don't get a error message.
+
+In fact, we get exactly the same result as this.
+
+So here we took our raw output of the model, explicitly passed it through a sigmoid and computed BCE loss function.
+
+Here we do.
+
+We just use BCEWithLogitsLoss and we get the same answer without explicitly using the sigmoid function.
+
+And this is just a little note.
+
+Say that in two examples, you generally don't need to worry about numerical accuracy, but it's good practice in general to use BCEWithLogicLoss instead of explicitly computing the sigmoid of the raw output.
+
+OK, very nice.
+
+So that was binary categorization error.
+
+#### Categorical cross-entropy
+
+And now let's look at categorical cross entropy error, categorical cross entropy loss functions.
+
+```python
+# loss function
+lossfunCCE = nn.CrossEntropyLoss()
+
+# vector of output layer (pre-softmax)
+yHat = torch.tensor([[1.,4,3]])
+
+for i in range(3):
+  correctAnswer = torch.tensor([i])
+  thisloss = lossfunCCE(yHat,correctAnswer).item()
+  print( 'Loss when correct answer is %g: %g' %(i,thisloss) )
+```
+
+So here I'm using or creating an instance of this class nn.CrossEntropyLoss.
+
+And here again, I'm simulating the output of the model.
+
+But now the output of the model is not a single number.
+
+Instead it is a vector or a one dimensional tensor of three numbers.
+
+And this is simulating a case where the output layer has three nodes in it.
+
+Let's say let's say we are trying to categorize whether a picture is of a cat or a dog or a giraffe.
+
+So there's three possibilities.
+
+So the output layer, the final output layer of the model has three units and this would be the vector of numbers that are output by those different units.
+
+So Y hat four one input is a three element vector.
+
+And then when I'm doing this for loop here is simulating a correct answer or target answer of zero one two corresponding to this being correct or this being correct or this being correct.
+
+And then we compute the lost function and then I'm just going to report that value.
+
+```console
+Loss when correct answer is 0: 3.34901
+Loss when correct answer is 1: 0.349012
+Loss when correct answer is 2: 1.34901
+```
+
+OK, so here we see that when the correct answer is zero, the loss is three point three.
+
+Now, what does that mean?
+
+Well, that means that the correct answer, the target value is actually the first category, but the first category actually had the smallest associated output.
+
+So model was totally wrong here.
+
+This is totally, totally wrong.
+
+So therefore, the loss is going to be large and that's what we see here.
+
+And then the second loop.
+
+So corresponding to this message, this tells us that the the correct answer was Category one and the loss is still greater than zero.
+
+Now, this initially might seem a little confusing because the model actually got the answer, correct?
+
+Right.
+
+The largest value here is four, which is in index one.
+
+So, in fact, the model made the correct decision.
+
+It correctly classified the input sample.
+
+However, what we want to do in deep learning is not only learn from our correct responses, we also want to learn from possibilities of being incorrect.
+
+So you see that?
+
+Yeah, technically four is the largest number.
+
+But the model also thought it was pretty likely that there was a giraffe in the picture.
+
+So it also gave a large output to this value here.
+
+So having a non-zero loss function is going to help the model learn not only that this is correct, but also that this is incorrect.
+
+And so to show you the importance of that distinction, what I'm going to do is make this number larger.
+
+```python
+# loss function
+lossfunCCE = nn.CrossEntropyLoss()
+
+# vector of output layer (pre-softmax)
+yHat = torch.tensor([[1.,7,3]])
+
+for i in range(3):
+  correctAnswer = torch.tensor([i])
+  thisloss = lossfunCCE(yHat,correctAnswer).item()
+  print( 'Loss when correct answer is %g: %g' %(i,thisloss) )
+# Loss when correct answer is 0: 6.02058
+# Loss when correct answer is 1: 0.0205811
+# Loss when correct answer is 2: 4.02058
+```
+
+Let's set this to like seven.
+
+So now it's still the same correct answer.
+
+So in an absolutist, categorical sense, the model is equally correct here and here.
+
+And even if I say three point seventy three point there, so three point one in an absolute categorical
+
+sense, the model is equally correct here versus here.
+
+However, the difference is that here the model is making a larger distinction between the categories.
+
+So let's see what happens to the error function for this particular correct item.
+
+So it goes from point three four down to zero point zero two.
+
+So now the losses are smaller because the model is learning that this is correct and this is incorrect.
+
+OK, very good.
+
+Let me change this back to four, run it through again.
+
+And then we see that when the model gives this output, when the and the target value, the correct
+
+value is index to which corresponds to the third position, then the model is wrong.
+
+But it's not as wrong as it was when the target value was zero.
+
+So we still have a loss, but the loss isn't as high.
+
+All right.
+
+I hope that all makes sense.
+
+```python
+# Repeat using pre-softmaxified output
+sm = nn.Softmax(dim=1)
+yHat_sm = sm(yHat)
+
+for i in range(3):
+  correctAnswer = torch.tensor([i])
+  thisloss = lossfunCCE(yHat_sm,correctAnswer).item()
+  print( 'Loss when correct answer is %g: %g' %(i,thisloss) )
+```
+
+Let's go down to the next example here.
+
+This is the same code.
+
+This is the same code, except that I'm now applying the softmax function to the output.
+
+So here I'm just inputting the raw numerical output data into this lossfunCCE or a cross entropy loss, a cross categorical entropy.
+
+And here I am first applying the softmax function and then providing that as the input.
+
+So I'm already transforming the softmax function.
+
+And it's a little are you surprised that these numbers are different from these numbers to see why we actually shouldn't be surprised?
+
+Let's look at the dock string for Lost Fun CCE, which is this instance of the cross categorical loss.
+
+![](.md/README.md/2023-07-21-04-22-28.png)
+
+So we see this criteria in this lost function, Combine's LogSoftmax and torch.nn.NLLLoss And then this is negative log likelihood loss.
+
+It's quite a lot of ls bouncing around here.
+
+This is negative log likelihood lost in one single class and the input is expected to contain raw UNnormalized scores for each class.
+
+So that means that this is already computing the softmax function for us.
+
+So what does it mean if we if we compute softmax and then we we pass the softmax function, softmaxifid data into this lost function?
+
+Well, it means that we are applying a nonlinear transformation to the data and then we pass it into the lost function.
+
+So this is incorrect.
+
+This is not the right way to do it because we are taking the softmax twice.
+
+We are sorry, we are pre softmaxifying the model output and then the model.
+
+This function also computes the softmax.
+
+So this is not the way to do it.
+
+But I just wanted to point it out explicitly and mention why this these numbers are different, and that's because the softmax is already a nonlinear transformation.
+
+So we're stretching out these numbers, the raw model output, even more than they should have been.
+
+OK, enough of that.
+
+```python
+# compare raw, softmax, and log-softmax outputs
+sm = nn.LogSoftmax(dim=1)
+yHat_logsm = sm(yHat)
+
+# print them
+print(yHat)
+print(yHat_sm)
+print(yHat_logsm)
+
+# tensor([[1., 4., 3.]])
+# tensor([[0.0351, 0.7054, 0.2595]])
+# tensor([[-3.3490, -0.3490, -1.3490]])
+```
+
+Here, I want to show you the raw model output, softmax model output and log softmax model output.
+
+And the main thing here is to illustrate the difference between softmax and log softmax.
+
+OK, so to do this, I'm just creating this instance of this function log softmax.
+
+So what we see here is the raw model outputs the softmax version of the raw model outputs and the log of these softmax.
+
+Now, these numbers do not sum to one.
+
+Obviously, you can see that pretty clearly.
+
+These numbers.
+
+This is softmax of the output.
+
+So these numbers do sum to one.
+
+```text
+tensor([[1., 7., 3.]])
+```
+
+So these we just interpret as some some arbitrary numbers.
+
+```text
+tensor([[0.0024, 0.9796, 0.0179]])
+```
+
+These we can interpret as a probability distribution.
+
+So now what we want, what we are going to trying to train the model to do is get this number to be as large as possible, close to one.
+
+And we want these two numbers to be close to zero.
+
+And when when we get that, that means that the model becomes more confident about a single choice.
+
+```text
+tensor([[-6.0206, -0.0206, -4.0206]])
+```
+
+OK, and then this is literally just the log.
+
+This is the natural log of these numbers.
+
+Now, I mentioned in the video in the previous video that we train using log softmax.
+
+That's better than training Softmax.
+
+And I think you can see the reason when looking at these numbers, the difference between this model output and this is the unit output.
+
+The difference between the output of this unit and this unit (0.0351 and 0.7054) is around nine point seven ish.
+
+But the difference in log softmax output is this versus this (-3.3490 and -0.3490), which is basically three units difference.
+
+So the model is going to learn more in this case (`[-3.3490, -0.3490, -1.3490]`) than in this case (`[0.0351, 0.7054, 0.2595]`).
+
+OK, very nice.
+
+So that's really all I wanted to say about these lost functions.
+
+I hope you found that information and these demonstrations useful.
+
+#### Creating your own custom loss function
+
+```python
+class myLoss(nn.Module): # inherent info from nn.Module
+  def __init__(self):
+    super().__init__()
+      
+  def forward(self,x,y):
+    loss = torch.abs(x-y)
+    return loss
+
+# test it out!
+lfun = myLoss()
+lfun(torch.tensor(4),torch.tensor(5.2))
+
+# tensor(1.2000)
+```
+
+I now want to show one more thing in this video, which is how to create your own custom lost functions.
+
+Now, let me say that in general, I do not really recommend creating your own lost function unless you really need to.
+
+So if you're using a standard lost function that's already available in Python, then just use PyTorch's implementation.
+
+However, if you go to advanced applications of deep learning, if you're really on the cutting edge of developing deep learning models, where you working on a problem where standard models and standard lost functions are simply not going to work for you, then it's important to know how to create your own custom lost function.
+
+The good news is that it's basically the same as creating any other custom class in PyTorch.
+
+In fact, you can see that this looks really, really similar to how we create our own classes for the deep learning models.
+
+So we define the class, the name of the class, and is calling it my loss.
+
+And we inherit a bunch of stuff, a bunch of properties from PyTorch.nn.Module and then you need two functions in here, the init function, which actually in this case we don't need to initialize anything.
+
+So and just the functions is there and `def forward` And this is what gets run when you call this function or the instance of this class.
+
+So here we can test it out.
+
+I say lfun for lost function is an instance of the myLoss class and then here inputting two values.
+
+These correspond to X and Y.
+
+You can see the order is important here.
+
+So we first input X and then Y, so this could be the output of the model and Y would be the target value.
+
+And in this case I'm computing the L1 loss or the absolute value of the loss.
+
+So we expect this difference.
+
+Well, we can computers in our head.
+
+This is going to be one point two.
+
+And of course if I set this to like six, then this is going to be point eight, not minus point eight,
+
+of course, because we're taking the absolute value.
+
+### More practice with multioutput ANNs
+
+> - Get a review and more experience working with ANNs and multioutput networks
+
+This video is a bit of a throwback to the previous section of the course on ANNss when we were working with qwerties and trying to build models to categorize those qwerties.
+
+So what we are going to do here is develop a model that can predict these three different categories of qwerties based on their X and Y axis coordinates.
+
+![](.md/README.md/2023-07-21-04-42-00.png)
+
+So very similar to problems that we were working on earlier in the course.
+
+#### Haven't we already done multiclass ANNs?
+
+![](.md/README.md/2023-07-21-04-44-39.png)
+
+Now you might be wondering, hey, Mike, what are we doing with this?
+
+Haven't we already done Multiclass Anan's?
+
+And yeah, we did already do it.
+
+But deep learning is tricky stuff.
+
+It is much more of an empirical science than an analytic science.
+
+And that means that the way to get better at deep learning is not by looking at equations and by reading papers, but by having lots and lots of practice and lots of sample code to look at and to work through and to modify.
+
+So therefore, what I did here was rewrite the code.
+
+I use slightly different code.
+
+I set up the models in slightly different ways.
+
+The training is a little bit different and the visualization of the results is also a bit different from what you've seen before.
+
+So my goal here is just to help you build flexibility and intuition.
+
+There's also going to be additional explorations that you can use at the end of the code notebook to help you further develop your deep learning skills.
+
+So and then I have this final point here.
+
+Real world models are rarely written from scratch.
+
+So when you go out into the real world, you you're doing deep learning stuff.
+
+You're not really building models from scratch.
+
+So I thought it would also be helpful to give you a couple of additional example code files that you can modify in the future.
+
+So with that, let's switch to Python and start coding.
+
+[DUDL_metaparams_multioutput.ipynb](../metaparams/DUDL_metaparams_multioutput.ipynb)
+
+![](.md/README.md/2023-07-21-05-28-07.png)
+
+
+OK, here is a slightly different way of viewing the. Outcome of the model, so what you see here is the sample number, so this is all 900 qwerties Now, this is actually not separating the data into train and test samples.
+
+You can see I'm just taking all of the data, the entire dataset, passing it through.
+
+The model is the trained version of the model and getting the predictions, the raw output from the model and then the.
+
+So this is the raw output.
+
+The predictions for which samples go with which categories that we get by taking the argmax of axis equals one, which means we are getting the maximum for each row over the three different columns.
+
+So this is going to give us an answer of zero one or two, according to what the model predicted each data point should be categorized as.
+
+And then I plot that as the blue circles and then I'm plotting these labels.
+
+And this plus two plus point two is actually just a little bit of a y axis offset that just facilitates the visualization here.
+
+So I think this is a pretty interesting way to see it.
+
+You can see this is the target value.
+
+This is the correct answer.
+
+The true state of the world.
+
+These orange looks like it's a bar, but in fact, these are just many, many individual squares that are compressed next to each other and they're a bit overlapping.
+
+So every time you see that the blue circles and the orange squares are in the same category, that's a correct response.
+
+And these are all errors.
+
+The model is making errors here, here, here.
+
+These are lots of errors, some errors here and more errors here.
+
+I think this is a pretty interesting way to look at it, because this gives you insight into the difficulties that the model is having.
+
+For example, the model seems to do worse in Category one.
+
+So this Category zero, category one, Category two, the model seems to do worse in Category one.
+
+And furthermore, it seems like most of the errors, most of the confusion that the model had made for Category one were in Category two.
+
+So most of the time that the model incorrectly labeled data that was actually in Category one, the model had a preference and had a bias to label those as Category two.
+
+Now, of course, these are just random data, so we don't really know what to make of that too much.
+
+But this will be the kind of thing that you could use in real data to try and understand what is going wrong with your data.
+
+Where is the data struggling?
+
+And maybe that will inspire you to gather new data or somehow adjust the model so that the accuracy is higher or at least more balanced.
+
+In fact, this will lead to larger discussions and a little bit later in the course, in a few sections on balanced versus unbalanced design and possible biases that might get introduced.
+
+And then I will also talk in a later section about more sensitive ways to measure model performance, to understand whether the model's accuracy is relatively unbiased like this or relatively biased like this.
+
+OK, so that's just a little bit of foreshadowing<sup>전조가 되다, 조짐을 나타내다</sup> for the kinds of details that we are going to discuss later in the course.
+
+OK, now this is just visual and qualitative.
+
+I'm just kind of guessing that there's more errors here than here.
+
+![](.md/README.md/2023-07-21-05-33-20.png)
+
+So the next step is to quantify this.
+
+So here I create a vector called accuracy and actually maybe I will print this out just to show you what this vector is.
+
+So accuracy and then print accuracy like this.
+
+So this is a vector that is ones and zeros and it's one for everywhere where the prediction, the predictive categories matched the true labels.
+
+So the true categories and it's zero where there was a mismatch.
+
+So these ones and zeros basically correspond to these predictions aligning or mis aligning here.
+
+OK, so then what do we do with that?
+
+So with that we can actually compute the accuracy per category.
+
+So instead of looking at the overall accuracy, which is what you see in this plot, we can now examine the accuracy per individual item.
+
+And that's what you're going to see here.
+
+So the total average accuracy was ninety five percent.
+
+This is, again, the entire data set.
+
+So this is including the training data and the test data.
+
+But you can see that the accuracy for the different groups, the different categories was not all equal.
+
+In fact, the model did really well.
+
+And Category zero and I mean, this is still pretty good.
+
+It's like 92 percent.
+
+So accuracy is still pretty high here.
+
+But it was struggling more with group one compared to the other groups.
+
+Again, this is going to lead to a larger discussion of how to quantify these differences.
+
+We'll get to that a little bit later in the course.
+
+![](.md/README.md/2023-07-21-05-35-27.png)
+
+OK, and then the final thing to show is.
+
+A plot that I've also shown you before.
+
+So here you see the three different categories and I've marked in X's everywhere where there was a miss categorization not surprising.
+
+Most of the Miss Categorisations appeared with these kind of outlier data points where you couldn't  reasonably expect any model to get this one correct.
