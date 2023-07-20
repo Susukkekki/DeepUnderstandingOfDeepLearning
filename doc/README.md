@@ -192,6 +192,15 @@
       - [Creating your own custom loss function](#creating-your-own-custom-loss-function)
     - [More practice with multioutput ANNs](#more-practice-with-multioutput-anns)
       - [Haven't we already done multiclass ANNs?](#havent-we-already-done-multiclass-anns)
+    - [Optimizers (minibatch, momentum)](#optimizers-minibatch-momentum)
+      - [What and where are optimizers?](#what-and-where-are-optimizers)
+      - [Stochastic gradient descent](#stochastic-gradient-descent)
+      - [SGD on mini-batches](#sgd-on-mini-batches)
+      - [Mini-batch stochastic gradient descent](#mini-batch-stochastic-gradient-descent)
+      - [What is momentum?](#what-is-momentum)
+      - [SGD with momentum](#sgd-with-momentum)
+      - [Why do they call it momentum?](#why-do-they-call-it-momentum)
+    - [SGD with momentum](#sgd-with-momentum-1)
 
 ## Math, numpy, PyTorch
 
@@ -4506,3 +4515,455 @@ A plot that I've also shown you before.
 So here you see the three different categories and I've marked in X's everywhere where there was a miss categorization not surprising.
 
 Most of the Miss Categorisations appeared with these kind of outlier data points where you couldn't  reasonably expect any model to get this one correct.
+
+### Optimizers (minibatch, momentum)
+
+> - Know what an optimizer is
+> - See a reminder of stochastic gradient descent
+> - Learn why mini-batch SGD acts as an optimizer
+> - Learn about momentum and why it improves learning
+
+
+The goal of the next half dozen videos is to teach you about the optimizers that are commonly used in deep learning to train deep learning models in this video, I'm going to explain what an optimizer is, what this term actually means after giving you a brief reminder of the algorithm for gradient descent.
+
+And then in this video, we will discuss minibatch, stochastic gradient descent and momentum, the momentum algorithm.
+
+And then in later videos, you will also learn about arms prop and the Adam algorithm.
+
+#### What and where are optimizers?
+
+![](.md/README.md/2023-07-21-05-39-49.png)
+
+So let me begin with a quick reminder of gradient descent.
+
+So the idea of gradient descent is to find the minimum of a function.
+
+Now, when I first introduce gradient descent, we were finding the minimum of just, you know, abstract, arbitrary functions like a quadratic, for example, or some polynomial.
+
+Now, in deep learning, what we do is represent our errors, the models, errors, or the discrepancy between the model's prediction and the target variables, which is the real world data that we've measured.
+
+We represent that error function as a mathematical function.
+
+It's a landscape.
+
+It's a multidimensional landscape.
+
+And so the goal is to find the minimum point of that error landscape.
+
+And we want to find the minimum because the minimum of the error or the smallest errors we can get corresponds to the highest accuracy.
+
+So the best match between what the model can produce based on input and what we have actually measured in the real world.
+
+And the map of that error landscape, the terrain, the grid on which that landscape is defined is the trainable weights.
+
+These are the weights of the model.
+
+So all the weights between the nodes and the biases that each node or each unit has.
+
+So the idea of gradient descent is we start off with a totally random set of weights.
+
+That means we just pick some random point on this graph here.
+
+We pick a random value of X in the context of deep learning.
+
+We call that W and we just initialize them to be random.
+
+Now, there are actually different ways of initializing these random weights and we'll talk more about that later in the course.
+
+But we do start off the model with random parameters and then we need to train those parameters.
+
+We need to learn the best set of weights that minimizes the error, that steps down the error function,
+
+and that's the idea of training in the gradient descent part of the algorithm.
+
+So what we do is we compute the derivative at the current location.
+
+So wherever the model is currently sitting in the error function, we compute the derivative with respect to the weights.
+
+And because it's a multidimensional function, we call it a gradient instead of a derivative.
+
+But the concept is the same.
+
+And the reason why we compute the derivative or the gradient is that the gradient tells us which direction the function is going up in.
+
+So therefore we know which direction in the error landscape is pointing up.
+
+So therefore to go down, we simply reverse the sign of the gradient using a minus sign and then we add that gradient back to the weights and that allows us to step down in the error landscape.
+
+Now, here is the key point here.
+
+The key point is that the gradient itself is likely to be much larger than the step size that we really want to take.
+
+So if we would just subtract off the gradient from the weights, we would end up just bouncing around just totally wildly and probably miss the error minimum completely.
+
+So we need to scale down the gradient.
+
+We need to slow down this updating process, this learning process, so that we are taking small steps instead of huge steps.
+
+So therefore we scale by a learning rate.
+
+And the learning rate is, you know, some small number.
+
+It's point one or 0.01.
+
+And the whole goal of the learning rate is just to slow down the learning so we're not going to miss the local minimum.
+
+Here is where the optimizers come into play.
+
+![](.md/README.md/2023-07-21-05-44-41.png)
+
+How exactly do we scale the gradient?
+
+How do we optimize the size of the steps that we take?
+
+So this is this is really where these various optimizers come into play.
+
+![](.md/README.md/2023-07-21-05-45-28.png)
+
+So an optimizer is simply an algorithm that adjusts the weights during back prop.
+
+Now, you already know about stochastic gradient descent.
+
+Of course, I just gave you a reminder of that in the previous slide.
+
+The most important thing to know about optimizers is that they are not fundamentally different from stochastic gradient descent.
+
+Instead, all of these optimizers are simply modifications.
+
+They are minor modifications or little tweaks, little tricks that we add to the stochastic gradient algorithm.
+
+And the goal of these optimizers is basically to smooth the descent, we want to smooth down the descent
+
+so that learning is a little bit faster and a little bit more efficient.
+
+So here is a depiction of this.
+
+![](.md/README.md/2023-07-21-05-46-34.png)
+
+This will be the lost magnitude over here in the Y axis and this will be training APOC.
+
+So imagine that with vanilla gradient descent or, you know, standard old school classical gradient descent, you know, we have a lost function that looks something like this.
+
+It's it's going down, but it's kind of bouncing around. (orange line)
+
+So then the idea of an optimizer is just as smooth this out. (yellow line)
+
+So we're getting this gradient descent to be faster and a little bit more efficient.
+
+OK, so now I'm going to give another little reminder of stochastic gradient descent, using pictures to show you why we can get some of these bumps.
+
+Why does gradient descent go down and then go up?
+
+You know, why do we get this increase in loss here?
+
+#### Stochastic gradient descent
+
+![](.md/README.md/2023-07-21-05-48-45.png)
+
+So here's the formula again.
+
+So we adjust the weights according to themselves, minus the gradient of the lost function at the location where the weights are scaled down by eta or some small number.
+
+This is our learning rate.
+
+![](.md/README.md/2023-07-21-05-49-23.png)
+
+OK, so stochastic gradient descent changes the weights after each data point, after each sample, after each row in your data matrix.
+
+Now it turns out that stochastic gradient descent is a really great and highly efficient algorithm when the data samples that data points are all really similar to each other.
+
+So when you have data that look really similar to each other, then stochastic gradient descent is going to be a really great and effective algorithm.
+
+It's a little bit slow.
+
+It's not necessarily the fastest way to learn, but it is very effective.
+
+The thing is, this is not always the case.
+
+The samples being really similar to each other is not always the case.
+
+Imagine working with images and trying to classify images of carrots.
+
+Well, you know, there's lots of different kinds of carrots and we can take pictures from many different angles.
+
+The pictures themselves are going to have a lot of different things going on in the background.
+
+So not all carrots, not all pictures of carrots look so similar to each other.
+
+So that's an example of where stochastic gradient descent might not be so great.
+
+Or conversely, imagine we are, you know, sorting through medical records from a large database.
+
+And we've selected the data entries.
+
+We've selected the patient records that are already maximally similar to each other.
+
+These are all patients with the same lifestyle, the same disease and so on.
+
+So there in that case, the gradient descent is actually going to be a really great algorithm just on its own.
+
+So why does gradient descent work less well?
+
+Why is this not such a great algorithm on its own when the data are different from each other, when there's heterogeneity in the data?
+
+![](.md/README.md/2023-07-21-05-51-21.png)
+
+Well, stochastic gradient descent is very sensitive and so it can lead to volatile changes from non representative samples, which is another way of saying an outlier.
+
+Let me give you a visual depiction so you see what this looks like.
+
+![](.md/README.md/2023-07-21-05-51-43.png)
+
+Imagine we are trying to separate the green circles from the red circles.
+
+Looks a bit like a like a qwerties separation problem.
+
+So you can see that most of the green circles look pretty similar to each other.
+
+Likewise for the red circles there.
+
+But we do have this one outlier here.
+
+OK, so we are going to learn a line that separates the green circles from the red circles.
+
+![](.md/README.md/2023-07-21-05-52-26.png)
+
+So we start gradient descent with a completely random set of weights, which in this case means a random intercept and a random slope.
+
+Obviously this is a terrible final solution, but it's totally fine.
+
+This is how we initialized the model weights.
+
+OK, so then we get our first data point and that's this data point.
+
+Now we're working with stochastic gradient descent, so we have only one data point at a time.
+
+Now we learn from this and we update the weights.
+
+![](.md/README.md/2023-07-21-05-53-07.png)
+
+And, you know, this looks really good.
+
+Now we go to the next step where we pick another data point, and that happens to be this one.
+
+So we adjust the weights more and hey, things are going great.
+
+![](.md/README.md/2023-07-21-05-53-28.png)
+
+This line, you know, after only two steps, this line is looking pretty good.
+
+But then what happens?
+
+We randomly pick this point and this point is so far off, which is giving us such a big loss that the weight ends up changing hugely.
+
+![](.md/README.md/2023-07-21-05-53-58.png)
+
+The model changes too much at overcompensates for this unusual or non representative data point.
+
+So one way to deal with this situation is by training in mini batches.
+
+#### SGD on mini-batches
+
+And I already told you all about mini batches, training in mini batches.
+
+So just by way, a quick reminder, the idea is that we don't change the weights after each sample.
+
+We're not updating after each sample instead.
+
+![](.md/README.md/2023-07-21-05-54-58.png)
+
+We are averaging the losses across N samples were N is some number.
+
+That's typically a power of two.
+
+So it can be like 16 samples or 32 samples.
+
+And the idea is that each individual sample is making a smaller contribution to the gradient.
+
+![](.md/README.md/2023-07-21-05-56-04.png)
+
+So therefore mini batch training can be more robust than stochastic gradient descent.
+
+On the other hand, as I already discussed, when the samples are very similar to each other, then stochastic gradient descent learning after each item actually is more effective and faster.
+
+#### Mini-batch stochastic gradient descent
+
+![](.md/README.md/2023-07-21-05-56-49.png)
+
+So going back to the visual example from the previous few slides here, we see imagine we have a mini batch size of five, so we're training five samples at a time.
+
+Now you can see that these two samples are consistent.
+
+Basically, all four of these samples are similar to their own group.
+
+And then we have this one outlier here and now because the loss of this outlier is averaged in with the losses of these other data points, our learning is not going to be so unduly influenced by this one data sample.
+
+![](.md/README.md/2023-07-21-05-57-46.png)
+
+This makes a smaller contribution because it gets averaged in with these other five data points or these other four data points.
+
+So that is an illustration of why many batch gradient descent can smooth learning.
+
+However, we have already seen an example where mini batch training actually doesn't necessarily improve performance.
+
+![](.md/README.md/2023-07-21-05-58-27.png)
+
+This is the the results from the video `codeChallenge: effects of mini batch size` earlier in the course.
+
+And here you saw that training was actually faster when we had smaller mini batches.
+
+And the reason why this happened is that the data points were all very similar to each other.
+
+The data was relatively homogenous within each category.
+
+So therefore, averaging over the losses actually slowed down the model performance.
+
+Of course, by the end it was all it was all fine.
+
+Anyway, the models still learned just as well from these various mini batch size, but with the exception of getting really, really large, many batches.
+
+#### What is momentum?
+
+Now I'd like to discuss momentum.
+
+So what is momentum?
+
+![](.md/README.md/2023-07-21-05-59-50.png)
+
+Momentum essentially means smoothing by taking a weighted average of the data points.
+
+So in this slide, I'm going to first illustrate the concept of momentum more abstractly.
+
+And then in the next slide, I'll show you how this relates to deep learning and stochastic gradient descent.
+
+![](.md/README.md/2023-07-21-06-00-35.png)
+
+So the idea of momentum is that each data point is a weighted average of itself and the previous data point.
+
+So mathematically that looks something like this.
+
+![](.md/README.md/2023-07-21-06-00-56.png)
+
+Imagine we have some variable V this is a vector over time.
+
+So the subscript T is for time points and via some vector that's changing over time.
+
+Now we set the value of V at time T to be equal to itself, plus the previous value of V, so V at T minus one.
+
+And then we scale the present value and the previous value according to some factor beta, which varies between zero and one.
+
+So let's imagine that beta equals zero point five.
+
+So if beta equals zero point five, then this is literally just the average, the unweighted average of the current value and the previous value.
+
+Now typically we set Beta to be some larger value, something closer to one.
+
+I will get into that on the next slide.
+
+So here's a depiction of some Time series.
+
+![](.md/README.md/2023-07-21-06-02-12.png)
+
+It's a noisy time series and it's decreasing over time gradually.
+
+But of course, locally it has a lot of fluctuations.
+
+So this is our original Vector V and then here in green, you can see what happens when I set Beta to be equal to zero point nine.
+
+![](.md/README.md/2023-07-21-06-02-45.png)
+
+So essentially we are just smoothing out this trajectory, which means we have fewer of these wild fluctuations up and down.
+
+So essentially momentum is taking a weighted average.
+
+It's also sometimes called an exponential average because the weighting of previous values, all the previous values are weighted less and less as time goes on or as training progresses.
+
+#### SGD with momentum
+
+![](.md/README.md/2023-07-21-06-03-59.png)
+
+OK, so with this as a brief introduction, here is the idea of stochastic gradient descent with momentum.
+
+The first thing I would like you to do is imagine that this beta parameter equals zero.
+
+So let's look at this.
+
+Equate this set of equations when beta equals zero.
+
+Well, this line says V equals this is just one times the gradient of the cost function plus zero.
+
+So who cares about this?
+
+This is zero.
+
+So V equals the gradient of the loss of the cost function and then that goes into here, multiplies
+
+the learning rate and updates w so you can see here that when momentum our side when beta equals zero then stochastic gradient descent with momentum is. Literally just stochastic gradient descent.
+
+OK, so then we can increase beta, typically beta values in momentum are somewhere in between point nine and point nine nine, something like that.
+
+So that means that the current value of the gradient of the cost function is weighted down by, you know, it's reduced by like 90 percent.
+
+And instead we are focusing on the previous value.
+
+So the most important thing, again, a little repetition here, but the most important thing to realize about momentum is that it's not fundamentally different from stochastic gradient descent.
+
+The only thing we are adding is taking a weighted average of previous cost functions or previous lost functions, depending on how much you're averaging.
+
+So that means that this gradient here, when we are updating the weights, the change of the weights is not only a function of the current losses, it's also a function of the previous losses.
+
+So why is it called momentum?
+
+Why don't they call it stochastic gradient descent with weighted averaging?
+
+I guess they could have called it that.
+
+But there is a geometric interpretation of of momentum and that I'm going to show you here.
+
+#### Why do they call it momentum?
+
+![](.md/README.md/2023-07-21-06-06-33.png)
+
+So the geometric interpretation is that the weight trajectory is biased by its previous direction.
+
+So here is some two dimensional error landscape.
+
+This is just an abstract, error landscape.
+
+And so the goal, this is the minimum here.
+
+And so we're starting off somewhere around here.
+
+The goal of stochastic gradient descent is to move down this trajectory or move this trajectory towards the minimum of this error function, which is somewhere here in the middle.
+
+So then the idea of momentum, so this would be stochastic gradient so that we can kind of bounce around.
+
+![](.md/README.md/2023-07-21-06-07-34.png)
+
+Sometimes we end up going in the wrong direction because we are processing one data sample, which is unusual, like what I illustrated earlier.
+
+![](.md/README.md/2023-07-21-06-08-09.png)
+
+So the idea of momentum is that we start off exactly the same, but then we compute the local gradient here just for this particular sample or this particular batch and the gradient here.
+
+At this point, the gradient tells us we should move in this direction, but we have built up momentum going in this direction.
+
+![](.md/README.md/2023-07-21-06-08-59.png)
+
+So this direction here is actually some weighted combination or sorry, the direction the step we actually take is some weighted combination of this vector plus the previous vector.
+
+So you see that that the previous direction is going to bias us.
+
+It's a little bit like if you're running, so imagine you're going for a run, you're running as fast as you can and then there's a really strong crosswind.
+
+So there's a really strong gust of wind coming at you from the side.
+
+It's not going to blow you completely to the other direction.
+
+It's just going to change your direction a little bit because you've already have this momentum going from running.
+
+OK, so you can see the idea of momentum.
+
+It's just going to smooth out all of these rough edges that we are getting from stochastic gradient descent.
+
+### SGD with momentum
