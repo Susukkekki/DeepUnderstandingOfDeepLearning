@@ -208,6 +208,16 @@
       - [Adam](#adam)
       - [The Adam math](#the-adam-math)
       - [Optimizers galore!](#optimizers-galore)
+    - [Optimizer comparison](#optimizer-comparison)
+      - [Our goal for this lesson](#our-goal-for-this-lesson)
+    - [CodeChallenge: Optimizers and something](#codechallenge-optimizers-and-something)
+    - [CodeChallenge: Adam with L2 regularization](#codechallenge-adam-with-l2-regularization)
+    - [Learning rate decay](#learning-rate-decay)
+      - [Learning rate decay from g.d. section](#learning-rate-decay-from-gd-section)
+    - [How to pick the right metaparameters](#how-to-pick-the-right-metaparameters)
+      - [So, how do you pick metaparameters?](#so-how-do-you-pick-metaparameters)
+      - [Reminder about train/devset/test sets](#reminder-about-traindevsettest-sets)
+      - [Searching through the parameter space](#searching-through-the-parameter-space)
 
 ## Math, numpy, PyTorch
 
@@ -5416,3 +5426,1124 @@ So you don't always need the added complexity of the Adam optimizer.
 It's always important to keep in mind with any rapidly developing field, deep learning or any any other field, that what is currently thought to be the best is not necessarily always going to be the best.
 
 So it's good to keep an open mind and an open eye and just be aware of developments in the Optimizers area.
+
+### Optimizer comparison
+
+> - See a direct comparison of the three optimizers introduced in the previous video
+> - Become more comfortable with writing Python functions to create and train models, and visualize results.
+
+In this video, you are going to see a direct comparison of three different learning optimizers using a simple data set, so the qwerties data set for categorization.
+
+I want to keep the data set simple enough for this video to allow us to focus more on the optimizers and making sure you know how to implement these different optimizers.
+
+Actually, really, really straightforward in later videos in the rest of this section.
+
+And also in the next section, you are going to see a little bit more about the advantages of the modern optimizers like Adam over standard gradient descent.
+
+#### Our goal for this lesson
+
+![](.md/README.md/2023-07-21-09-43-19.png)
+
+So what are we going to do in this video?
+
+Well, we are going to come up with our qwerties data set for three categories, just like we've done before.
+
+We're going to compute the losses and the training and test accuracy, just like we've done before.
+
+The main difference is that we are going to generate a figure that looks like this for the stochastic gradient descent rms prop and Adam.
+
+So we're going to have three different figures that all look like this using different optimizers.
+
+And then in this video, we are going to qualitatively compare the performances of the different optimizers.
+
+So we're just going to look at these graphs and make some qualitative interpretations.
+
+And then we can also think about what kinds of variables will be interesting to manipulate in the code challenge coming up in the next video.
+
+[DUDL_metaparams_optimizersComparison.ipynb](../metaparams/DUDL_metaparams_optimizersComparison.ipynb)
+
+```python
+# create a class for the model
+def createTheQwertyNet(optimizerAlgo):
+
+  class qwertyNet(nn.Module):
+    def __init__(self):
+      super().__init__()
+
+      ### input layer
+      self.input = nn.Linear(2,8)
+      
+      ### hidden layer
+      self.fc1 = nn.Linear(8,8)
+
+      ### output layer
+      self.output = nn.Linear(8,3)
+
+    # forward pass
+    def forward(self,x):
+      x = F.relu( self.input(x) )
+      x = F.relu( self.fc1(x) )
+      return self.output(x)
+  
+  # create the model instance
+  net = qwertyNet()
+  
+  # loss function
+  lossfun = nn.CrossEntropyLoss()
+
+  # optimizer
+  optifun = getattr( torch.optim,optimizerAlgo )
+  optimizer = optifun(net.parameters(),lr=.01)
+
+  return net,lossfun,optimizer
+```
+
+```python
+# test the model with optimizer type as input
+
+# try 'SGD', 'RMSprop', and 'Adam'
+optim = createTheQwertyNet('RMSprop')[2]
+optim
+```
+
+```text
+RMSprop (
+Parameter Group 0
+    alpha: 0.99
+    centered: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    lr: 0.01
+    maximize: False
+    momentum: 0
+    weight_decay: 0
+)
+```
+
+Here you see the parameters for rms.
+
+Now, this is what I called beta in the video, in the previous video, and I called it beta one when I introduced Adam.
+
+So here they're calling it Alpha.
+
+But it's the same thing.
+
+Here is the eps term that is the term that gets added, the constant that's gets added to the denominator in order to prevent a possibility of dividing by zero.
+
+That's also something I discussed in the previous video.
+
+```python
+# now run through all of them
+
+# average performance
+performance = []
+
+for opto in ['SGD','RMSprop','Adam']:
+  trainAcc,testAcc,losses,net = function2trainTheModel(opto)
+  plotTheResults(opto)
+
+  # store the final results
+  train = np.mean(trainAcc[-10:])
+  test  = np.mean(testAcc[-10:])
+
+  performance.append( f'{opto}: train {train:.1f}%, test {test:.1f}%' )
+```
+
+![](.md/README.md/2023-07-21-09-53-05.png)  
+
+OK, so let's see, let me scroll out a little bit.
+
+So here is for stochastic gradient descent.
+
+We see the accuracy gets up to I think that's a little we can see what the actual numbers are below.
+
+It looks like it's a little bit below 90 percent or so.
+
+And let's see, it took maybe 10 or 12, 15 bucks in total of training to get a reasonably high accuracy.
+
+OK, I guess here's the number.
+
+The final accuracy was 88 percent.
+
+Not bad, not super great, but overall, not bad.
+
+![](.md/README.md/2023-07-21-09-53-20.png)  
+
+Let's see, rms prop here.
+
+We get eighty eight percent accuracy.
+
+So pretty comparable.
+
+But we do see a difference here that rms prop gives us faster learning.
+
+So in fact, it's really already after one or two training epocs, we're already doing quite well and the model doesn't get a whole lot better after that.
+
+So rms up.
+
+![](.md/README.md/2023-07-21-09-52-33.png)
+
+Let's see how Adam does.
+
+This also gets 80 percent accuracy.
+
+So exactly the same accuracy as rms prop.
+
+And this one also learns really fast.
+
+This is already you can see the first data point for training is already about eighty five percent or so.
+
+So that means it really only took one spark of training for Adam to get to its final maximum performance.
+
+So it isn't really much of an increase after the first epoc.
+
+OK, so now we can look at this performance variable that I created earlier.
+
+```text
+['SGD: train 87.0%, test 86.9%',
+ 'RMSprop: train 87.2%, test 85.7%',
+ 'Adam: train 87.3%, test 85.1%']
+```
+
+You can see it's just a list of the optimizer, the train performance and the test performance.
+
+So it looks like in this case, arms had the best test accuracy, although not really hugely different between the three different optimizers.
+
+So they all did reasonably well, somewhere around 90 percent.
+
+Now, I'm going to rerun this entire notebook file just out of curiosity to see how stable the performance is and how similar they are across the different optimizers.
+
+So this run, we got 90 percent accuracy, and that seems to be really consistent across the three different
+optimizers.
+
+In fact, it was the highest for gradient descent.
+
+But I don't think that's a real meaningful difference.
+
+I would say based on our two runs that in this data set with this model architecture, Adam and arms prop and stochastic gradient descent end up doing roughly equally well.
+
+But it is pretty interesting to see that Adam really only needs one apoc of training.
+
+It learns so fast that even by the end of the first training apoc, it's already at close to maximum performance.
+
+rms looks similar, although maybe it does get a little bit better over time.
+
+And we see that gradient descent, you know, visually, aesthetically, I like this better.
+
+It has this really nice logarithmic shape.
+
+But, you know, in terms of learning, it's clear that we should prefer to learn in one training epoc compared to learning in you know, this takes maybe 30 training epocs or so.
+
+### CodeChallenge: Optimizers and something
+
+> - Compare performance of three optimizers using a range of learning rates.
+> - Learn that one optimizer is not always better than another.
+
+![](.md/README.md/2023-07-21-10-02-38.png)
+
+The goal of this code challenge is to explore the effects of learning rates on model performance with various optimizers.
+
+In particular, what you want to do is start from the code in the previous video.
+
+So make a copy of the notebook from the previous video.
+
+[DUDL_metaparams_optimizersComparison.ipynb](../metaparams/DUDL_metaparams_optimizersComparison.ipynb)
+
+Now, in that video, we tested each one of these three optimizers once, and then we qualitatively compare the performance across those different optimizers while leaving the learning rate fixed.
+
+So the learning rate was fixed to a zero point zero one.
+
+Now, in this video, what you want to do is test each of these three optimizers 20 times and each iteration,
+each time you rerun the model with the different optimizer, you change the learning rate.
+
+So set the learning rate to go from ten to the minus four, up to ten to the minus one.
+
+`And just to keep things interesting, you want to use logarithmically spaced learning rates instead of
+linearly spaced learning rates.`
+
+And then it will be very interesting to see what the results look like.
+
+So in general, you're going to get three lines on this graph corresponding to gradient descent arms and Adam Optimizers.
+
+But then, you know, how will these three optimizers perform?
+
+You could imagine something like, you know, it just sort of goes up or maybe goes down.
+
+Maybe there are some inverted U shape where, you know, there are sort of intermediate values of learning rates that are good.
+
+Maybe you'll find that different optimizers have better performance at different learning rates.
+
+Here you see on the Y Axis label that I plotted here, what I took to average from the performance is the last 10 epocs.
+
+So the average of the final 10 epocs of the test sets of a performance on the test set here.
+
+[DUDL_metaparams_CodeChallengeOptimizers.ipynb](../metaparams/DUDL_metaparams_CodeChallengeOptimizers.ipynb)
+
+```python
+# create a function and class for the model
+
+def createTheQwertyNet(optimizerAlgo,learningrate):
+
+  class qwertyNet(nn.Module):
+    def __init__(self):
+      super().__init__()
+
+      ### input layer
+      self.input = nn.Linear(2,8)
+      
+      ### hidden layer
+      self.fc1 = nn.Linear(8,8)
+
+      ### output layer
+      self.output = nn.Linear(8,3)
+
+    # forward pass
+    def forward(self,x):
+      x = F.relu( self.input(x) )
+      x = F.relu( self.fc1(x) )
+      return self.output(x)
+  
+  # create the model instance
+  net = qwertyNet()
+  
+  # loss function
+  lossfun = nn.CrossEntropyLoss()
+
+  # optimizer
+  optifun = getattr( torch.optim,optimizerAlgo )
+  optimizer = optifun(net.parameters(),lr=learningrate)
+
+  return net,lossfun,optimizer
+```
+
+```python
+# a function that trains the model
+
+def function2trainTheModel(optimizerType,learningrate):
+
+  # number of epochs
+  numepochs = 50
+  
+  # create a new model
+  net,lossfun,optimizer = createTheQwertyNet(optimizerType,learningrate)
+
+  # initialize losses
+  losses   = torch.zeros(numepochs)
+  trainAcc = []
+  testAcc  = []
+
+  # loop over epochs
+  for epochi in range(numepochs):
+
+    # switch on training mode
+    net.train()
+
+    # loop over training data batches
+    batchAcc  = []
+    batchLoss = []
+    for X,y in train_loader:
+
+      # forward pass and loss
+      yHat = net(X)
+      loss = lossfun(yHat,y)
+
+      # backprop
+      optimizer.zero_grad()
+      loss.backward()
+      optimizer.step()
+
+      # loss from this batch
+      batchLoss.append(loss.item())
+
+      # compute accuracy
+      matches = torch.argmax(yHat,axis=1) == y     # booleans (false/true)
+      matchesNumeric = matches.float()             # convert to numbers (0/1)
+      accuracyPct = 100*torch.mean(matchesNumeric) # average and x100 
+      batchAcc.append( accuracyPct )               # add to list of accuracies
+    # end of batch loop...
+
+    # now that we've trained through the batches, get their average training accuracy
+    trainAcc.append( np.mean(batchAcc) )
+
+    # and get average losses across the batches
+    losses[epochi] = np.mean(batchLoss)
+
+    # test accuracy
+    net.eval()
+    X,y = next(iter(test_loader)) # extract X,y from test dataloader
+    with torch.no_grad(): # deactivates autograd
+      yHat = net(X)
+      
+    # compare the following really long line of code to the training accuracy lines
+    testAcc.append( 100*torch.mean((torch.argmax(yHat,axis=1)==y).float()) ) 
+  # end epochs
+
+  # function output
+  return trainAcc,testAcc,losses,net
+```
+
+```python
+# variables to loop over
+learningRates = np.logspace(np.log10(.0001),np.log10(.1),20)
+optimTypes = ['SGD','RMSprop','Adam']
+
+# initialize performance matrix
+finalPerformance = np.zeros((len(learningRates),len(optimTypes)))
+
+
+# now for the experiment!
+for idx_o,opto in enumerate(optimTypes):
+  for idx_l,lr in enumerate(learningRates):
+    trainAcc,testAcc,losses,net = function2trainTheModel(opto,lr)
+    finalPerformance[idx_l,idx_o] = np.mean(testAcc[-10:])
+```
+
+![](.md/README.md/2023-07-21-10-16-08.png)
+
+Let's now have a look at the results.
+
+So here you see the model performance as a function of the learning rates and the optimizer.
+
+So for rms Up and Adam, it is pretty clear that nearly all learning rates perform equally well.
+
+It gets a little bit different.
+
+You know, learning slows down when we get to really tiny learning rates.
+
+And for gradient descent, we see that the model performance is a little bit more dependent on the learning rate that we specify.
+
+Now, this should not be very surprising given what we saw in the formulas for the adam and arms optimizers
+
+in particular.
+
+You saw that in Adam and rms Propp the learning rate is actually scaled according to the recent history of the gradients, in particular, the variability of the gradients or the energy, the rms of the gradients.
+
+So therefore, with rms and adam, the effective learning rate so you can specify some number.
+
+But the effective learning rate which actually gets incorporated in back propagation, is dynamic. 
+
+It's adaptive.
+
+It depends on the history of the model performance.
+
+And that is actually really great.
+
+That's one of the things that makes arms prop and atoms so powerful and so flexible is that they are robust to the initial learning rate.
+
+So it doesn't matter so much which learning rate you specify for the model.
+
+As long as it's a reasonable start of the learning rate, the optimizer will figure out how to adjust the learning rate to optimize.
+
+Learning about stochastic gradient descent here looks pretty wild, actually.
+
+There's another time that I ran it where it was a little bit more stable, wasn't so wild from run to run.
+
+![](.md/README.md/2023-07-21-10-16-55.png)
+
+But here again you see that rms prop and adam are pretty comparable for a large range of learning rates.
+
+The model performance declined here and in this particular case, when I ran this time, it also declined a little bit for very large learning rates.
+
+So it's not the case that the learning rate doesn't matter for rms prop and adam, but it matters a lot less.
+
+So that means that when you use these optimizers, you don't need to worry so much about the initial learning rate.
+
+### CodeChallenge: Adam with L2 regularization
+
+> - Have the opportunity to review and improve your skills about seting up regularization.
+> - Run an experiment to explorer the effects of L2 regularization amounts.
+
+In this challenge, you will have the opportunity to integrate knowledge that you have gained over the previous section on Regularisation and in this section on optimizers, so in particular, you are going to run an experiment where you explore the effects of L2 regularization on learning with the adam optimizer.
+
+So here is what you want to do.
+
+![](.md/README.md/2023-07-21-10-57-49.png)
+
+- [DUDL_regular_L2regu.ipynb](../regularization/DUDL_regular_L2regu.ipynb)
+- [DUDL_metaparams_CodeChallengeOptimizers.ipynb](../metaparams/DUDL_metaparams_CodeChallengeOptimizers.ipynb)
+
+![](.md/README.md/2023-07-21-11-02-39.png)
+
+[DUDL_metaparams_CodeChallengeAdamL2.ipynb](../metaparams/DUDL_metaparams_CodeChallengeAdamL2.ipynb)
+
+```python
+# finally, translate into dataloader objects
+batchsize    = 32
+```
+
+```python
+# create a class for the model
+def createTheQwertyNet(L2lambda):
+
+  # ... 중략 ...
+  
+  # create the model instance
+  net = qwertyNet()
+  
+  # loss function
+  lossfun = nn.CrossEntropyLoss()
+
+  # optimizer
+  optimizer = torch.optim.Adam(net.parameters(),lr=.001,weight_decay=L2lambda)
+
+  return net,lossfun,optimizer
+```
+
+```python
+# a function that trains the model
+
+def function2trainTheModel(L2lambda):
+
+  # create a new model
+  net,lossfun,optimizer = createTheQwertyNet(L2lambda)
+
+  # ... 생략 ....
+```
+
+```python
+# range of L2 regularization amounts
+l2lambdas = np.linspace(0,.1,6)
+
+# number of epochs
+numepochs = 50
+
+# initialize output results matrices
+accuracyResultsTrain = np.zeros((numepochs,len(l2lambdas)))
+accuracyResultsTest  = np.zeros((numepochs,len(l2lambdas)))
+
+
+# loop over batch sizes
+for li in range(len(l2lambdas)):
+
+  # create and train a model
+  trainAcc,testAcc,losses,net = function2trainTheModel(l2lambdas[li])
+
+  # store data
+  accuracyResultsTrain[:,li] = trainAcc
+  accuracyResultsTest[:,li]  = testAcc
+```
+
+![](.md/README.md/2023-07-21-11-09-45.png)
+
+So here we can see what the results look like.
+
+Now, there's a couple of things that I would like to point out.
+
+First of all, you will recall from actually two videos ago when I first showed you how these optimizers performed with the qwerties classification data, you'll remember that Adam and also rms math problem
+
+basically learned immediately it got up to, you know, its maximum performance after one or two epochs here.
+
+The learning is overall much slower.
+
+Well, much slower.
+
+It's still learning quite fast.
+
+Right.
+
+The best it gets is like after ten epochs.
+
+But the learning is certainly slower than it was when I first showed you the Adam optimizer on these data.
+
+Now, if you didn't go through the additional optional exercises in the previous video where we compared
+the learning rates, then I encourage you after this video to return to the previous video and go through the additional optional exercises.
+
+What you would have discovered there is that the learning rate doesn't actually affect the final performance, how the model did at the very end for Adam and. rms prop, however, the learning rate did actually affect the initial learning, and so there were ranges of learning rates that were very small, close to zero, where the model still learned, it just learned much more slowly.
+
+And that's what we see here.
+
+So the model is learning more slowly because the initial learning rate or the learning rate is set to point 001 instead of like 0.01, for example.
+
+OK, anyway, that's one comment.
+
+Of course, the main point of this video is to see how L2 regularisation affects performance in this model and for this data set.
+
+And I believe the general conclusion here is that L2 regularisation doesn't really help or maybe a little bit of L2 regularisation is good that you can see the blue line corresponds to zero.
+
+So no regularisation.
+
+And actually that looks like the best performance is for the Orange Line, which is point zero to so very little regularization.
+
+Also for test accuracy, it looks like .02 lamda of .02 does slightly better.
+
+But I think if you would rerun this whole notebook again, you might not get you might not find consistently that point zero two is always better than zero.
+
+But I think you will always find that little or no L2 regularization for this problem generally gives the best performance and the fastest learning.
+
+One of the take home messages from this result is that when the model is already performing quite well, which, for example, it does here with the Atom Optimizer, then adding other methods of regularization or data augmentation or, you know, making the model deeper or larger, these don't necessarily improve performance.
+
+In fact, if you have a model that already works quite well and you start making it more and more complex, you start adding more features and more parameters and more things for the model to do and to learn.
+
+Sometimes that actually leads to worse performance overall compared to a simpler model that has fewer, you know, fewer moving parts, fewer mechanics in it.
+
+### Learning rate decay
+
+> - Get a reminder of what learning rate decay means
+> - See that fancy DL parameters are not necessarily always better.
+
+One of the remarkable features of the rms prop and Adam Optimizers is that they dynamically adjust the effective learning rate during training as a function of the recent history of the magnitude of the gradients.
+
+However, sometimes you also want to have more control over the change in the learning rate as a function of the learning or training.
+
+So that is called learning rate Dekay.
+
+It's a concept that I've introduced you to previously in the course, in the section on gradient descent.
+
+And in this video I'm going to show you how to implement learning rate decay in PyTorch.
+
+#### Learning rate decay from g.d. section
+
+![](.md/README.md/2023-07-21-11-21-34.png)
+
+So just as a quick reminder of the gradient descent section, we had this code challenge where we compared learning performance between a fixed learning rate and a dynamic learning rate.
+
+So a learning rate that changed over time.
+
+![](.md/README.md/2023-07-21-11-22-15.png)
+
+Now I also discussed that there are several ways to change the learning rate as a function of learning.
+
+One of them was to set the learning rate to be proportional to the training epochs.
+
+And I said this is a good method.
+
+It's often done in blocks and this is called learning rate decay.
+
+So now we are going to switch to Python and I'm going to show you how to implement and interpret learning decay using PyTorch.
+
+[DUDL_metaparams_learningRateDecay.ipynb](../metaparams/DUDL_metaparams_learningRateDecay.ipynb)
+
+```python
+  # optimizer and LR scheduler
+  optimizer = torch.optim.SGD(net.parameters(),lr=initialLR)
+  stepsize  = batchsize*len(train_loader)
+  scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=stepsize,gamma=.5)
+```
+
+```python
+# create a network
+net = createTheQwertyNet(.01)[0]
+
+# a new optimizer
+optimizer = torch.optim.SGD(net.parameters(),lr=.01)
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=5,gamma=1/2)
+
+# test the change in learning rate
+for epoch in range(3):
+  for batchnum in range(10):
+    print(f'Batch {batchnum}, epoch {epoch}: LR={scheduler.get_last_lr()[0]}')
+    scheduler.step()
+```
+
+There are a few new lines of code which I'm going to talk about in more detail in a moment.
+
+But first, I want to introduce you to this learning rate scheduler on its own, separately from this model.
+
+OK, so what I do here is create a deep learning model.
+
+We're not going to actually train this model or push any data through it.
+
+We just need to have the network so that we can set up a an optimizer with some parameters in it.
+
+So I create a new optimizer and initialize the learning rate to be .01.
+
+You will see in a moment that this is just the first learning rate.
+
+This is going to be the learning rate at the very beginning of training.
+
+And we're going to change or decay that learning rate over training.
+
+OK, then here is a new line of code for you.
+
+```python
+# a new optimizer
+optimizer = torch.optim.SGD(net.parameters(),lr=.01)
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=5,gamma=1/2)
+```
+
+So we have torch.optim, same module as what we have here.
+
+But now we have lr_scheduler.
+
+This is the learning rate scheduler DOT.
+
+So it's an option of the learning rate scheduler stepLR..
+
+So this means that we are going to change the learning rate in steps.
+
+So we input the optimizer which we created here and the step size and a parameter called Gammer.
+
+So the step size is how often we change the learning rate and gamma is the multiplicative factor that we change the learning rate by.
+
+So I'm going to show you the dark string for this in a moment, but I want to show you just the results first.
+
+So here is simulating our training procedure.
+
+So we have a for loop over epochs.
+
+Let's say we're training for three epochs and then we have another for loop four batches.
+
+Let's say we're training 10 mini batches.
+
+And then I'm just going to print out some information.
+
+This is scheduler.get_last_lr.
+
+So this is a function that will return the current learning rate, the most recent learning rate that got implemented during the optimization during the gradient descent.
+
+And then I'm calling a method on that scheduler here called Scheduler Step.
+
+```python
+# test the change in learning rate
+for epoch in range(3):
+  for batchnum in range(10):
+    print(f'Batch {batchnum}, epoch {epoch}: LR={scheduler.get_last_lr()[0]}')
+    scheduler.step()
+```
+
+So this is a key line here.
+
+It's what's going to keep track of the changes and when we need to change the learning rate.
+
+OK, so let's run this out here.
+
+```text
+Batch 0, epoch 0: LR=0.01
+Batch 1, epoch 0: LR=0.01
+Batch 2, epoch 0: LR=0.01
+Batch 3, epoch 0: LR=0.01
+Batch 4, epoch 0: LR=0.01
+Batch 5, epoch 0: LR=0.005
+Batch 6, epoch 0: LR=0.005
+Batch 7, epoch 0: LR=0.005
+Batch 8, epoch 0: LR=0.005
+Batch 9, epoch 0: LR=0.005
+Batch 0, epoch 1: LR=0.0025
+Batch 1, epoch 1: LR=0.0025
+Batch 2, epoch 1: LR=0.0025
+Batch 3, epoch 1: LR=0.0025
+Batch 4, epoch 1: LR=0.0025
+Batch 5, epoch 1: LR=0.00125
+Batch 6, epoch 1: LR=0.00125
+Batch 7, epoch 1: LR=0.00125
+Batch 8, epoch 1: LR=0.00125
+Batch 9, epoch 1: LR=0.00125
+Batch 0, epoch 2: LR=0.000625
+Batch 1, epoch 2: LR=0.000625
+Batch 2, epoch 2: LR=0.000625
+Batch 3, epoch 2: LR=0.000625
+Batch 4, epoch 2: LR=0.000625
+Batch 5, epoch 2: LR=0.0003125
+Batch 6, epoch 2: LR=0.0003125
+Batch 7, epoch 2: LR=0.0003125
+Batch 8, epoch 2: LR=0.0003125
+Batch 9, epoch 2: LR=0.0003125
+```
+
+And now you can see we started the learning rate a point or one, so we see at the very beginning poin zero one learning rate, and then here we have a learning rate of point of one four, one, two, three, four, five calls.
+
+Right.
+
+So we're iterating five times, five times this function got called scheduler dot step.
+
+And then look what happened.
+
+The learning rate changed.
+
+It went from point one to zero point zero five.
+
+Now, it's no surprise that the relationship between point one and point of five is exactly one 1/2.
+
+That is what we specified here.
+
+OK, then we have the learning rate of point zero five four one, two, three, four, five.
+
+Again, that's our step size here.
+
+And then the learning rate halves again.
+
+It goes to point zero to five here and halves again.
+
+Halves again has again and so on.
+
+Now this down here, this is a warning message.
+
+It's basically saying that PyTorch doesn't like the order in which we are calling the step method.
+
+Now, that's totally fine.
+
+This is you know, we're going to do this the right way when we get to actual testing.
+
+Essentially, Python is saying that we are stepping through the scheduler without moving through any learning.
+
+So that is a good warning message.
+
+But for this toy little example, we don't have to worry about that.
+
+OK, so with that as an introduction to the learning rate scheduler and scheduler dot step, let me now go back up to the model to show you what is new in this model that you haven't seen before.
+
+So I have this parameter into this function that creates the network initial L.R., initial learning rate.
+
+All of this stuff is is old news.
+
+You've also you've seen this all before.
+
+```python
+  # optimizer and LR scheduler
+  optimizer = torch.optim.SGD(net.parameters(),lr=initialLR)
+  stepsize  = batchsize*len(train_loader)
+  scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=stepsize,gamma=.5)
+```
+
+OK, so here we have stochastic gradient descent and the learning rate, which is now going to be the initial learning rate is set to this input parameter.
+
+And then here is this scheduler exactly like I showed below.
+
+Here I have Gamma to be zero point five.
+
+Of course, that's the same thing as one half.
+
+So the learning rate is going to have every step size, every couple of iterations.
+
+And how many iterations do we go through?
+
+Well, I have set that step size to be the batch size times, the length of the train loader.
+
+And why is that?
+
+Why is that a meaningful number?
+
+What is the sense of this number?
+
+Well, this is actually just the total number of data samples that we have in the training set.
+
+So we have batch size samples per train loader item and then we have the length of the train loader.
+
+So this turns out to be the number 800.
+
+OK, so we have to call this scheduler 800 times before this learning rate is going to have.
+
+OK, so with that in mind now, let's go forward to the training again.
+
+Most of the code that you will see in this cell here, this python function is the same that you've seen before.
+
+There's only a couple of new things.
+
+One is this boolean toggle.
+
+I'll talk about this in a moment.
+
+Here's this initial L.R. parameter, which is exactly what you saw in the code above.
+
+```python
+      # step the learning-rate scheduler
+      if toggleDynamicLR:
+        scheduler.step()
+```
+
+OK, so most of this code is the same.
+
+Here is the new thing here.
+
+This is the new thing.
+
+Scheduler step, just like what I showed in the toy example earlier.
+
+And now I've put this inside a toggle.
+
+And this is basically just going to allow us to switch the learning rate scheduler on and off in different experiments.
+
+So that's going to allow us to compare the performance of this model with a dynamic learning rate, learning rate and without learning rate decay.
+
+Notice also where I've put this code.
+
+So this goes immediately after the optimizer step.
+
+So we do back propagation.
+
+You step forward with the optimizer and then you step forward with the scheduler.
+
+So that's where this line of code is going to go, OK, and otherwise everything else is the same.
+
+OK, so run that cell.
+
+And before actually doing a little experiment, we're going to test that.
+
+The model really does change the learning rate.
+
+So what I'm doing is calling this function to build and train the model.
+
+This is the initial learning rate.
+
+So I'm setting it to point one in both cases.
+
+And this second input is the.
+
+Toggle that switches the learning rate decay to be on or off, OK, and then we're going to make a plot of the current learning rate as it's changing over time.
+
+So here we see this is with this toggle being true.
+
+![](.md/README.md/2023-07-21-11-38-12.png)
+
+So the learning rate should change and you see that every eight hundred cycles, the learning rate halves.
+
+So here it starts off as a point of one and then it goes to point zero five point zero to five and so on as a function of training, as a function of the number of mini batches that are trained.
+
+OK, and then here is where we switch that off.
+
+![](.md/README.md/2023-07-21-11-39-45.png)
+
+You can see that the learning rate is fixed at zero point zero one.
+
+It never changes.
+
+So these two plots are just a visual confirmation.
+
+This is a sanity check that the code is working the way we expect it to.
+
+And with that, we are ready to run a little experiment.
+
+This is going to be fairly quick.
+
+We're just going to do basically exactly what I did above, except now we are interested in the model performance.
+
+So I'm calling this dynamic the outcome of this test dynamic because the learning rate is changing and this is static because the learning rate is staying the same.
+
+So let's run this.
+
+That'll just take a moment and then we can see what the results look like.
+
+So here we are.
+
+![](.md/README.md/2023-07-21-11-41-07.png)
+
+You can see the training epochs.
+
+So we're doing 50 training epochs In total,
+
+the red lines correspond to the dynamic test. So when the learning rate was changing and the blue lines are the static test, when the learning rate was fixed at zero point zero one.
+
+Now, in this particular case, with this model architecture and this data set, it's not really clear that there's any benefit of having a dynamic learning rates or having the learning rate decay as a function of training.
+
+That's really because this is a fairly simple model and a fairly simple and small amount of data.
+
+So the main point of this demonstration here is to show you how to set up weight decay and how to progress through your training with the weight decreasing over time.
+
+If you repeat this experiment multiple times, I think you will see that sometimes the weight decay version seems a bit better.
+
+Sometimes the static version seems a bit better.
+
+Overall, I think it's a bit of a toss up.
+
+I don't think the results are super compelling either way here.
+
+### How to pick the right metaparameters
+
+> - Feel overwhelmed by the number of choices in DL.
+> - Understand why cheating on your test set won't help you.
+> - Have a general framework for how to pick metaparameters.
+
+At this point in the course, I certainly don't need to convince you that's a complicated aspect of deep learning, is the huge number of choices that you have available when designing your deep learning models.
+
+It's super overwhelming to think about all of the possibilities, all the meta parameters, the model architectures, the number of hidden layers, the regularization methods, et cetera, et cetera.
+
+So how do you pick the right set of meta parameters for your deep learning models?
+
+Well, unfortunately, you have this title is a little bit misleading because I'm not actually going to tell you how to pick the right meta parameters because I don't know and nobody knows.
+
+But what I am going to do is provide some general pointers and a bit of a framework for how to pick those meta parameters.
+
+#### So, how do you pick metaparameters?
+
+![](.md/README.md/2023-07-21-11-49-24.png)
+
+So how do you pick the right meta parameters for your model?
+
+Well, the first place to start is by looking to see what other people have done.
+
+So you want to start by looking for deep learning models that people have published in research papers or on their on a GitHub page or in a blog or YouTube video or course and look for models that work on similar kinds of data and similar kinds of problems as what you are working on.
+
+Now, that said, you should certainly not just naively and blindly trust that someone else's model is going to be a great solution for your data and your problem.
+
+So you want to start by seeing what other people have done, but don't assume that other people have figured out the best solution for their own problems, let alone a solution that will necessarily be optimal for the kinds of problems that you are working on.
+
+Instead, you have to integrate existing models with knowledge and experience that you have built up from this course and, you know, maybe other courses or other blog posts or online competitions that you look through and so on.
+
+So this is one reason why you need to go through many, many models and test many different kinds of data sets and parameters and so on.
+
+All of that. Collectively, that experience helps you build intuition and knowledge that will help guide you for picking meta parameters.
+
+I'm going to talk about this points in a moment about random searching and grid searching for parameters.
+
+This is essentially what we have been doing with designing experiments to evaluate different sets of parameters, to see how they perform.
+
+And, well, you need to try to find a balance between I call this laziness and diligence.
+
+Laziness would be just taking, you know, what other some other model that you downloaded from GitHub and and just running it and, you know, not paying too much attention.
+
+That's kind of the lazy approach.
+
+And diligence, of course, is working meticulously through many different kinds of models, different iterations with different sets of parameters and so on.
+
+Now it's simply impossible to test every possible model architecture and every possible meta parameter.
+
+So you need to find some balance between satisfying to get a good result versus diligence to try and get the best result you can.
+
+#### Reminder about train/devset/test sets
+
+![](.md/README.md/2023-07-21-11-49-46.png)
+
+Here I want to remind you about the overfitting cycle.
+
+So just as a quick reminder, we are training the model on our sample data on test data, and this involves overfitting of the parameters.
+
+So the weights and then we test the model.
+
+We evaluate the model on the development set that are the holdout set.
+
+Now, there's no model overfitting when we get to the devset, but usually what happens is you consider the performance on the devset or the development set.
+
+And based on the performance here, you're going to change something in the model.
+
+You change the number of units or the number of hidden layers.
+
+You change the optimizer, you add or modify the regularization and so on, and then you train again.
+
+![](.md/README.md/2023-07-21-11-51-31.png)
+
+So all of this cycle here is researcher Overfitting.
+
+And then when you're finished with this and you're happy with the dev set performance, only then can you move to the test phase where you are actually not in danger of overfitting, because these data samples here have never been exposed to the model, either in the training or in the model architecture adaptation.
+
+Now, you might be wondering, you might have wondered and maybe, you know, maybe you didn't say this out loud, but I can guess that the thought had occurred to you like, 
+
+hey, you know, wouldn't it be better if I use the test that as well?
+
+Why not also use the test that instead of just using the devset, why don't we you know, we can cheat a little bit and just sort of borrow from the test set to use as some additional data to evaluate the model performance.
+
+Well, in that case, you know, if you're using the test set and then making more modifications effectively, this is no longer a test that this is still just a devset.
+
+![](.md/README.md/2023-07-21-11-54-34.png)
+
+Maybe it's a second devset.
+
+You know, you might have multiple devset.
+
+But if you use this test set in this cycle here of model development, then you are essentially still risking overfitting either model overfitting or researcher overfitting.
+
+Now, you might say, yeah, but you know, what's the problem with that?
+
+Why why is that so bad if we do a little bit of research or overfitting?
+
+Well, you know, in the context of learning about deep learning, in the context of a course where you have a finite amount of data, that's probably not so bad.
+
+But the thing is, once you get to the real world, once you get to applications, nobody cares.
+
+Your potential employers and your customers, they're not going to care about how well your model performs here.
+
+They care about how your model performs here in the test set.
+
+And the thing is, they are not going to have access to the same test that that you were using in developing your model.
+
+They are going to have new data that probably hasn't even been collected when you are still developing the model.
+
+So I know it might be tempting to cheat a little bit and to use the test set to continue custom designing and fine tuning the model, but try to resist that urge.
+
+It's only going to hurt you in the end.
+
+![](.md/README.md/2023-07-21-11-56-45.png)
+
+#### Searching through the parameter space
+
+![](.md/README.md/2023-07-21-11-59-13.png)
+
+OK, so now let me say a little bit more about the process of this stage here.
+
+So once you evaluate the performance on the devset and then you want to adapt the model architecture or the model meta parameters, how exactly what's what's the best way of going about this?
+
+Well, we can think about this model space as some really high dimensional parameter space.
+
+So this is an example where we are manipulating two parameters, the learning rate and the L2 regularization amount.
+
+So these are the kinds of experiments that we have been doing in this course so far and we will continue to do so.
+
+You know, we fix a lot of other features of the model, like the number of hidden layers, the number of units, the optimizers.
+
+So we fixed many features of the parameter space and we only consider two dimensions and we vary those two dimensions.
+
+And each one of these little dots here represents a test of a model.
+
+So we test the model for this value of L2 Regularisation Lambda and for this learning rate.
+
+And then we skip here and here and here.
+
+Now, the thing is, if you only have a couple of parameters to search through, then this grid search of cutting this space up into equal sized pieces actually does make sense and it's feasible.
+
+And you've seen that very often.
+
+You know, this entire grid search takes tens of seconds or maybe a couple of minutes, even when we start getting into more complex models later in the course, this is still only going to take maybe 10 or 15 minutes to run through, which is totally fine.
+
+But this is not even close to the full parameter space that we have available.
+
+![](.md/README.md/2023-07-21-11-59-35.png)
+
+For example, we can also consider the different kinds of optimizers here.
+
+So here this layer of this parameter space would be gradient descent or standard gradient descent.
+
+Then we have Adam and maybe here I'm adding Adam plus dropout.
+
+And of course, you can also think about the level of dropout if you want to have 25 percent dropout versus 50 percent dropout and so on.
+
+So you can see that this search space is getting huge.
+
+It starts to get really, really big, really, really fast.
+
+And the problem with grid searching is that it starts to take an impossibly long amount of time.
+
+For one model. You know, you might be running days and days and days just to test this parameter space here.
+
+And obviously, you know, these three dimensions are clearly not the only possible dimensions we could add to this parameter space.
+
+So this would be an example of doing a grid search with regular dots everywhere.
+
+![](.md/README.md/2023-07-21-12-00-55.png)
+
+Instead, an alternative method is something like an informed random search where you are kind of randomly poking around in this search space, but it's informed by your knowledge and your experience of what ranges of parameters will work reasonably well and what won't work.
+
+Well, for example, we know with L2, with this lambda parameter, you know, if you set the lambda up to like point nine or something, that's just not going to work.
+
+The model is going to favor shrinking the weights too much.
+
+And you're not going to get good accuracy, good classification accuracy.
+
+So we don't need to search the entire space of possible lambda values.
+
+Likewise, we have already discovered actually that the learning rate doesn't. Matters so much for the Adam Optimizer and also rms prop, so if you're using Adam, you don't need to sample a very large number of learning rates.
+
+You can just try a couple and see which work best.
+
+And then that will help reduce the dimensionality of this parameter space that you need to search through.
+
+So this would be an informed random search 
+
+![](.md/README.md/2023-07-21-12-02-17.png)
+
+and another possibility would be a grid search, but a targeted grid search.
+
+So instead of exploring the entire possible parameter space, you focus in on a relatively small range of possible values.
+
+Again, this has to be informed by your experience working with and developing lots of different models with lots of different parameters.
+
+The more general point is that although in theory it would be optimal to test millions of different models with millions of different combinations of meta parameters and architectural choices in practice, that is simply not possible.
+
+So you have to find a balance between what you think might work, what you have seen other people do in models that you find published online and doing some parameter searching in areas of the parameter space where you think you are likely to see some interesting differences and optimizations.
+
+So I hope that advice makes sense.
+
+The important point is that you are never going to know if you really have the exact optimal, best possible ever model for your problem.
+
+So that can make deep learning development a little bit frustrating, but also a little bit exciting.
+
+And at the end of the day, you just have to make some informed guesses and hope for the best.
