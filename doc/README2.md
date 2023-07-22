@@ -25,6 +25,27 @@
       - [Goals for this codechallenge #2](#goals-for-this-codechallenge-2)
       - [Dicussion: Loss vs. accuracy](#dicussion-loss-vs-accuracy)
       - [Take-home messages](#take-home-messages)
+    - [Distributions of weights pre- and post-learning](#distributions-of-weights-pre--and-post-learning)
+      - [Weight initializations and changes](#weight-initializations-and-changes)
+    - [CodeChallenge: MNIST and breadth vs. depth](#codechallenge-mnist-and-breadth-vs-depth)
+      - [Reminder about terminology](#reminder-about-terminology)
+      - [Your DL mission!](#your-dl-mission)
+      - [cf model depth across datasets](#cf-model-depth-across-datasets)
+      - [Take-home messages](#take-home-messages-1)
+    - [CodeChallenge: Optimizers and MNIST](#codechallenge-optimizers-and-mnist)
+      - [What to do](#what-to-do)
+      - [Scrambled MNIST](#scrambled-mnist)
+      - [DL breakfast: Scrambled MNIST](#dl-breakfast-scrambled-mnist)
+      - [Shifted MNIST](#shifted-mnist)
+      - [Shifting an image](#shifting-an-image)
+      - [Our goal here](#our-goal-here)
+      - [Shifting an image](#shifting-an-image-1)
+    - [CodeChallenge: The mystery of the missing 7](#codechallenge-the-mystery-of-the-missing-7)
+      - [How does a DL model classify things it has never seen?](#how-does-a-dl-model-classify-things-it-has-never-seen)
+      - [Scenes from the codeChallenge](#scenes-from-the-codechallenge)
+    - [Universal approximation theorem](#universal-approximation-theorem)
+      - [Universal approximation theorem](#universal-approximation-theorem-1)
+      - [Universal approximation theorem](#universal-approximation-theorem-2)
 
 ## FFNs (Feed-Forward Networks)
 
@@ -1823,3 +1844,1798 @@ So that's the end of this code challenge.
 I hope you found it inspiring and insightful.
 
 We discussed the importance of data normalization and a reminder about the difference between loss and accuracy for evaluating model performance.
+
+### Distributions of weights pre- and post-learning
+
+> - How to access the weights in DL models
+> - How the weights (en masse) change during learning
+
+My goals for teaching this course are not just to give you code that you can use to run deep learning models, but instead to give you the skills and the knowledge so you can investigate these deep learning models on your own and understand their internal workings and dynamics, how they change as a function of training and so on.
+
+And so along those lines in this video, I am going to show you how to extract the weights during learning and examine their distributions, their histograms.
+
+#### Weight initializations and changes
+
+![](.md/README2.md/2023-07-22-18-55-26.png)
+
+So as a quick reminder, the entire purpose of deep learning, training of training or deep learning models is to adjust the weights so we can write that simply as this function where we want to find a set of weights.
+
+So all the trainable parameters that minimize the cost function, where the cost function is just the difference between what the model predicts and what our target variables specify.
+
+So the discrepancy<sup>차이, 불일치</sup> between what the model thinks is going on in the outside world and is what is actually going on in the outside world.
+
+So where do these weights come from?
+
+![](.md/README2.md/2023-07-22-18-54-30.png)
+
+Well, we initialize them randomly.
+
+We set them up to be random numbers at the beginning and then of course they are adjusted through back 
+propagation.
+
+![](.md/README2.md/2023-07-22-18-54-58.png)
+
+The question we will focus on here in this video is how learning changes the distribution of the weights, which we can visualize through histograms.
+
+Now there's going to be an entire section all about the weights.
+
+A little bit later in the course we'll talk about how weights get initialized, different methods of initializing the weights, different formulas to use when initializing the weights, and also how to inspect the weights.
+
+So this video is like it's a little bit of a teaser, a little bit of a trailer for what you're going to learn about in more detail later on in the course.
+
+But I thought it would be interesting to already have something like this now.
+
+So let's switch to Python.
+
+We're going to build a model that can learn the MNIST data set and then we will extract the weights at each step of learning, of training the model, and then we will make histograms.
+
+It's pretty neat.
+
+It's pretty insightful to see how the weight distributions are changing during the training.
+
+[DUDL_FFN_weightHistograms.ipynb](../FFN/DUDL_FFN_weightHistograms.ipynb)
+
+A lot of the code in this notebook is stuff you've already seen before.
+
+Here, we're not doing any weird things with normalizations like we've done in the previous couple of videos.
+
+Just standard normalizing the data to a range of 0 to 1.
+
+Okay.
+
+And then let's see, then we create our data loaders also pretty standard.
+
+Here we have our deep learning model.
+
+Also, there's nothing standard or new in here yet.
+
+![](.md/README2.md/2023-07-22-18-57-53.png)
+
+The idea is that we are going to start exploring what's actually taking place inside these layers.
+
+So these attributes here, these properties of this deep learning instance, this model instance, these are actually just matrices.
+
+This is a matrix of 784 by 64.
+
+This is a matrix.
+
+It's called something fancy.
+
+We call it a hidden layer self.fc1
+
+But really this is just a matrix of numbers and of size 64 by 32 and same thing for all these other layers.
+
+So let's see, run this code.
+
+![](.md/README2.md/2023-07-22-18-58-43.png)
+
+So now let's start exploring the model a little bit.
+
+So here I'm just creating an instance of this model.
+
+We call it temp, and this here I'm printing out a summary of the model.
+
+Now this we've looked at several times already.
+
+This shows us a summary of the model, gives us the names.
+
+![](.md/README2.md/2023-07-22-18-59-18.png)
+
+This each of the names here corresponds to what I specified in the class definition.
+
+So input layer is a linear layer.
+
+It has these and these size and a bias Okay Very nice. Nothing particularly new there.
+
+Now what we are going to do is start exploring some of these numbers.
+
+![](.md/README2.md/2023-07-22-18-59-47.png)
+
+Let me comment this out so we don't get confused so we can write net.input.
+
+So input actually let me let me do it this way so we can write next dot and then I hit the tab key and this shows me a list of all of the methods and attributes of this object net.
+
+So you'll recognize some of these.
+
+We looked at named parameters previously in the course and so on.
+
+What I want to access now is net dot input.
+
+Where is that here?
+
+Net dot input.
+
+So this is going to give me information about the input layer 
+
+![](.md/README2.md/2023-07-22-19-00-48.png)
+
+so we can see lots of parameters here, lots of properties.
+
+So training is set to true.
+
+That's because we are training the model.
+
+This will be set to false if we would use net.eval instead of net.training.
+
+And then we have all of the parameters.
+
+This is a dictionary and we have here the weights.
+
+This is lots and lots of numbers.
+
+Here we have the bias and here we have even more numbers here.
+
+![](.md/README2.md/2023-07-22-19-01-44.png)
+
+And there's also some additional overhead stuff that PyTorch uses during back propagation and so on.
+
+Okay, So this is how we access all of the input layer information.
+
+![](.md/README2.md/2023-07-22-19-02-07.png)
+
+Let's see if we just want to access the weights.
+
+So now I will write net dot input just like above dot wait and then dot shape.
+
+So this is going to print out.
+
+Let me even start like this.
+
+This is just going to print out the size of the weight matrix in the input layer.
+
+![](.md/README2.md/2023-07-22-19-02-48.png)
+
+Now, it's no surprise that it's this size because that's exactly what we specified in the model.
+
+Okay, So now we can actually look at the weights themselves.
+
+So here we are.
+
+![](.md/README2.md/2023-07-22-19-03-05.png)
+
+These are the actual numbers of the weights.
+
+You can see that they are relatively small.
+
+They're all close to zero and some of them are negative, some of them are positive.
+
+Let's create a histogram of these weights so we can have a closer look visually and see what their distribution looks like.
+
+So net, that's the name of the model instance, dot input.
+
+This is the layer weight, this is the feature that we want.
+
+We use detach to separate out the actual numbers from the additional overhead, the additional information that PyTorch is keeping in particular stuff about the gradient.
+
+So that's what detach does.
+
+And then dot flatten converts this from a matrix into a vector that just facilitates creating a histogram.
+
+So then I create a histogram of these weights and I'm using 40 bins.
+
+So now we can see what the distribution of the weights looks like in the input layer.
+
+![](.md/README2.md/2023-07-22-19-04-12.png)
+
+So you can see a couple of things.
+
+It's symmetric around zero, so it goes from negative to positive and it's the same number.
+
+So this is like 0.035 ish, I guess somewhere around there, negative and positive.
+
+And you can see that this is a uniform distribution.
+
+It's not a Gaussian distribution.
+
+It doesn't have tails on both sides.
+
+It is a uniform distribution.
+
+So this is for the input layer.
+
+You can probably imagine that if we wanted to inspect what this looked like for one of the hidden layers,
+
+all we have to do is replace input with fc1, for example, to give us the distribution, the histogram.
+
+![](.md/README2.md/2023-07-22-19-05-04.png)
+
+Of the first hidden layer.
+
+Now, this title is wrong, of course, but that's okay.
+
+![](.md/README2.md/2023-07-22-19-05-19.png)
+
+Now, this is pretty interesting.
+
+You see that the absolute weight values are different, right?
+
+When we looked at the hidden layer, they were smaller.
+
+They were around 0.03.
+
+So it was like this range here and now in this first hidden layer, it's actually larger.
+
+Again, these are based on algorithms that I'm going to discuss in more detail later on in the course
+
+in the section on weight initialization and investigations.
+
+But I just want to introduce this to you now.
+
+![](.md/README2.md/2023-07-22-19-06-03.png)
+
+So what I do here is create a function, a python function that will take as input a network and return as output the histogram.
+
+So it's essentially doing what I did here with a few exceptions.
+
+First of all, I'm getting the weights for all of the layers.
+
+![](.md/README2.md/2023-07-22-19-06-35.png)
+
+So all of the layers, not just from one layer, like the hidden layer or input layer, some stacking all the weights from the entire network into one vector.
+
+Here, computing the histogram here, I specify the the bin.
+
+So it's going to be 100 bins between -0.8 and plus 0.8.
+
+I'm hard coding this here because you'll see in a few moments we're going to be calling this many,
+
+many times and comparing these distributions, these histograms over the course of learning.
+
+So therefore it's convenient to have the bins be exactly the same every time we call this function.
+
+Okay?
+
+And then we return the x and y axis values from this histogram.
+
+So compile this function and then test it by calling the function on the network that we've just created.
+
+![](.md/README2.md/2023-07-22-19-07-42.png)
+
+So what you're looking at here is the histogram of all of the weights for the entire network from all the layers.
+
+Okay, very nice.
+
+So what we are going to do now is incorporate this line of code into the training and that you see here the function that trains the model.
+
+Now, I haven't really made any significant changes here except this line.
+
+![](.md/README2.md/2023-07-22-19-08-19.png)
+
+So this line is really the only thing that makes this code different, this training function different from the ones we've been using the past couple of videos.
+
+So so at the beginning of each training epoch, over 100 epochs, I think it's 100 over 100 epochs at the beginning of each training epoch, I'm extracting all of the weights, computing their histograms and storing that in this matrix here histy now?
+
+Hist x doesn't need to be stored in a matrix for each epoch because it never changes because it's hardcoded to be the same 
+
+Okay Everything else in this code is stuff you've seen before, so I'm not going to spend much time talking about it here.
+
+We train the model.
+
+Okay, So that took around a minute or two.
+
+And now let's investigate the model performance.
+
+We're not looking at the weights yet just to check that the model is doing reasonably well.
+
+![](.md/README2.md/2023-07-22-19-09-43.png)
+
+Not surprisingly, it does around 95% performance.
+
+That's what we'd expect from the past several videos based on this particular architecture and set of meta parameters.
+
+![](.md/README2.md/2023-07-22-19-10-02.png)
+
+So here's now going to be the interesting thing.
+
+We will inspect the histograms of the weights as a function of training.
+
+I will come back to this code in a moment.
+
+I first want to show you what the results look like and how to explore how to interpret them.
+
+![](.md/README2.md/2023-07-22-19-10-26.png)
+
+So here we see the histograms of the weights.
+
+So there's a lot of lines in here and they go from orange to blue.
+
+So the orange lines are the histograms at the beginning of training and the lines slowly become more and more blue towards the end of training.
+
+So after 100 training epochs and this is super interesting, I love looking at things like this.
+
+It's really interesting.
+
+So you see that although we set the weights initially to be uniformly distributed, what happened as a course of training is that a lot of the weights drifted to larger values, both larger negative values and also larger positive values.
+
+So you see that the center of the distribution is flattening, it's decreasing and the tails of the distributions start to emerge and they get bigger.
+
+So in fact, this is approaching a `Gaussian distribution`.
+
+This looks more and more like a Gaussian distribution as the learning progresses.
+
+And the reason why this happens is that the model is figuring out that the best way to classify these different images is to have some nodes in the network, be more important, have stronger weights compared to other nodes which have smaller weights.
+
+So we see that the model is learning to distribute its weights over a larger numerical range.
+
+That's pretty interesting.
+
+![](.md/README2.md/2023-07-22-19-12-09.png)
+
+This over here, this I don't know what you think this looks like.
+
+Maybe it looks like a fire shooting out of a smokestack or maybe you think there's like a UFO up here and it's siphoning up our larva because that's what aliens need to know. They came to Earth to steal our larva.
+
+Something like that.
+
+When I first saw this plot, it actually reminds me a little bit of when I used to go camping in the desert outside of Las Vegas.
+
+And you get this beautiful effect where you're the sky is black with some star and you see the light from the strip, from Las Vegas beaming up into the sky.
+
+It's pretty neat.
+
+Not quite this dramatic, but it's still nice to look at.
+
+Anyway, each row in this matrix is one line in this plot here, so you can see that at the beginning of training, when the model is first starting out, that's down here at the bottom of the graph, we see these are all zero values and then it immediately shoots up to some large value density.
+
+It goes up to three, four or so.
+
+So we get very large values.
+
+This shows the uniform distribution.
+
+As learning progresses, we get to in this plot more and more bluish lines, and here we're going higher up in the plot.
+
+So what you see is that the distribution of the weights is broadening, it's getting broader so there's less concentration of weights at the middle towards zero and more concentration of the weights or more shifting of the weights laterally here.
+
+So to larger weight values.
+
+So I hope you see these are just different ways of visualizing the same distributions.
+
+And what we're looking at is how the learning is changing the weights of the model as the model learns to categorize these images.
+
+By the way, in this model we are still using stochastic gradient descent.
+
+I actually mentioned a couple of videos ago that sometimes in this course I'm slowing down learning.
+
+I mean, making intentional choices that slow learning down to allow us to investigate the weights and other features of learning in more detail.
+
+This is one example of that.
+
+So we can actually get learning to be a little bit faster and a little bit better by changing some of the architectural and meta parameter choices in this model.
+
+And that is what we are going to explore in the upcoming videos.
+
+### CodeChallenge: MNIST and breadth vs. depth
+
+> - Learn the importance of depth in DL
+> - Gain more experience with findings/copy/pasting code (an important skill in ML!)
+
+The goal of this code challenge is to run an experiment to explore the effects of model complexity so breadth and depth on the categorization performance in the MNIST data set.
+
+#### Reminder about terminology
+
+![](.md/README2.md/2023-07-22-21-32-12.png)
+
+As a quick reminder of these two terms, we have modeled depth, and that refers to the number of hidden layers, the number of layers in between the input layer and the output layer.
+
+And then we have the model breadth, which is the number of units, the number of nodes per hidden layer. 
+
+Now in principle, this can vary across the layers, but when setting up these experiments, it's easiest to set the breadth to be a constant.
+
+So all of the hidden layers would have the same number of units in them.
+
+#### Your DL mission!
+
+![](.md/README2.md/2023-07-22-21-33-26.png)
+
+OK, so with that as a quick reminder, what you want to do in this code challenge is to vary systematically vary the number of hidden layers between one in three.
+
+So you're going to have models with one hidden layer, models with two in layers, models with three and later hidden layers.
+
+And also in different models vary the number of hidden units per layer between 50 and 200 and steps of 50.
+
+So you're going to have models with 50 units in the layers with 100 units, 150, 200, 250.
+
+So it ends up being quite a lot of models because you need all combinations of the units per layer and the number of layers.
+
+OK, and then as I mentioned, for convenience, you should use the same number of units per layer.
+
+And of course, the question is which models learn best?
+
+Now, my recommendation is to start from these two code files.
+
+- [DUDL_ANN_breadthVsDepth.ipynb](../ANN/DUDL_ANN_breadthVsDepth.ipynb)
+- [DUDL_FFN_FFNonMNIST.ipynb](../FFN/DUDL_FFN_FFNonMNIST.ipynb)
+
+So breadth versus depth in the ANN section and ANN MNIST, actually, I think I rename this code file to FFN, but I think you will find the right one.
+
+OK, so open up those two code files and then start a new notebook and integrate the code for the experiment from this data file.
+
+This code file.
+
+And for the next categorization from this code file, your results are going to look something like this.
+
+![](.md/README2.md/2023-07-22-21-36-31.png)
+
+So here we have accuracy for the training data set and accuracy for the test set.
+
+And here on the X axis, you have the number of hidden units.
+
+So you don't you're not going to have lines drawn at each of these tick marks.
+
+It's going to be 50, 100, one hundred and fifty, two hundred and two hundred and fifty.
+
+And then there's going to be three lines in each of these plots corresponding to models with one hidden layer, two in layers and three hidden layers.
+
+Now a little bit of a warning.
+
+This code challenge isn't super duper difficult.
+
+I think it will maybe it will take you know, it's a little bit of a challenge to figure out what you need to copy from which code file.
+
+But I don't think you will really struggle with this code challenge too much.
+
+But this code challenge will take a while.
+
+There's many models to train and each model takes a few minutes on its own.
+
+So be prepared for the actual experiment to run for a long time, like twenty or thirty minutes.
+
+So once you have everything set up and you're confident that it's correct, set the code, let it run and you know, go watch some cartoons or get a cup of coffee or do something else.
+
+OK, anyway, when you're ready, come back to the video.
+
+I'm going to show you how I set up my solution and then we'll also have a discussion about how to interpret the results.
+
+[DUDL_FFN_CodeChallengeBreadthDepth.ipynb](../FFN/DUDL_FFN_CodeChallengeBreadthDepth.ipynb)
+
+Because this experiment takes such a long time to run, I'm not actually going to run it in this video.
+
+Instead, I'm just going to scroll through the code and show you what I changed, what I integrated from previously in the course.
+
+So you'll remember the last time that we ran this parametric experiment on the number of hidden layers and the number of units per hidden layer.
+
+![](.md/README2.md/2023-07-22-21-39-07.png)
+
+We set up the model layers to be a dictionary in particular.
+
+It's a module dictionary.
+
+So it's a particular type of dictionary that comes with the torch.nn module.
+
+So we have this dictionary of layers and then I set the first input layer to be sorry, the first layer to be the input layer.
+
+And then here I have a for loop that specifies all of the subsequent hidden layers because this is going to vary for the different models.
+
+It's going to vary between one, two and three.
+
+And you can see the number of units is the same and all of these cases is the output layer and that is specified as an optional input, as an input into this function here, which creates the model and also, of course, as a input here into the in its function.
+
+All right.
+
+![](.md/README2.md/2023-07-22-21-40-22.png)
+
+So once we've set up the layers, then the forward pass looks pretty similar here for the the input layer.
+
+We can just simply specify that.
+
+And for the hidden layers, again, we need a for loop because the number, the exact number of hidden layers is going to vary between the different runs.
+
+So after that, everything is pretty much standard.
+
+And let's see, here is the function that trains the model.
+
+This is also pretty standard.
+
+I just deleted the line about computing and exporting the distribution of the weights from the previous video because, of course, we don't need that here.
+
+![](.md/README2.md/2023-07-22-21-41-07.png)
+
+Now, this is a good example of where it's really convenient to use this torch.no_grad.
+
+Remember, I've discussed this before and I said that using this line here.
+
+So deactivating all the auto grade computations is not necessary.
+
+It doesn't actually change anything because we're not learning at this stage.
+
+However, this turns off a lot of computations that we don't need here when evaluating the model.
+
+Now, that turns out to be really beneficial in this experiment because this experiment really takes a long time.
+
+So any way that we can shorten the computation time is going to be overall beneficial.
+
+OK, so then here I run the experiment.
+
+![](.md/README2.md/2023-07-22-21-42-10.png)
+
+You can see I vary the number of layers from one to three.
+
+Remember, these numbers are always exclusive upper bounce.
+
+And here I specify the number of units goes from 50 to here, right?
+
+Two hundred and fifty one in steps of fifty.
+
+The thing is, if you would just write to two fifty, then this would only actually get up to 200 units.
+
+So we need to go at least one step over.
+
+So then here is our double for loop, where we loop over the number of units and the number of layers
+
+and we provide those as inputs into the model.
+
+And here at the bottom, I'm printing out a friendly little status message.
+
+You may have noticed.
+
+I generally don't do this.
+
+I'm going to talk more later in the course about printing out these status messages as you're running through training.
+
+I generally don't like printing these out because I'm a bit of a minimalist.
+
+So I like to keep the output clean, but for really long experiments.
+
+And it actually is useful to see these updates so you can monitor the progress of the models.
+
+![](.md/README2.md/2023-07-22-21-43-42.png)
+
+OK, and then this code down here is just doing some plotting of the accuracies.
+
+So let me show you what the results look like from running through this code.
+
+![](.md/README2.md/2023-07-22-21-44-07.png)
+
+So here we see the model accuracy for training and testing data sets, and you see that is generally going up in all cases, the performance goes up when we increase the number of hidden units and the performance also increases as we increase the number of layers.
+
+So going from one layer to two layer to three layers, we see increasing performance. 
+
+Maybe not.
+
+You know, here it looks like it dipped down a little bit.
+
+But I think if you would just run the code again, you would find that it probably goes up here as well.
+
+So overall, not bad.
+
+You can also see that we are slowly inching higher in our final test performance, getting closer to what modern models are capable of.
+
+Now, on the one hand, this might seem intuitive that the more complex the model, the more hidden units or units are.
+
+The hidden layers we add in, the more hidden layers we add, the better the model does.
+
+#### cf model depth across datasets
+
+![](.md/README2.md/2023-07-22-21-45-41.png)
+
+Overall, however, that is literally exactly the opposite conclusion from what we came to earlier in the course when we ran this experiment looking at the iris data set.
+
+So this is a screenshot from earlier in the course.
+
+You might remember this.
+
+And there we also ran basically the same experiment, slightly different parameters, different numbers and so on, but basically the same experiment.
+
+And here we actually found that although adding hidden adding units to the hidden layers was beneficial overall, we also found that adding more hidden layers was not necessarily good.
+
+In fact, the best overall performance here was one hidden layer, which is the worst performance here. 
+
+So that's pretty striking.
+
+And we also see that, you know, the the performance as a function of the number of units and the hidden layer kind of saturated at maybe maybe somewhere around 50, 60, 80 or something, if you want to be generous.
+
+But somewhere around here, we got some saturation model, wasn't really doing well.
+
+But this is also totally a different conclusion from what we see here in the MNIST data set where it looks like we haven't even reached the asymptote.
+
+Right.
+
+This is still increasing.
+
+So maybe if we would add even more units to the hidden layers, we would get even better performance in the training set and also in the test set.
+
+So why this discrepancy?
+
+What does this mean and what can we learn from these experiments?
+
+#### Take-home messages
+
+![](.md/README2.md/2023-07-22-21-48-19.png)
+
+Well, as with nearly everything in deep learning, unfortunately, I have to admit I'm the first to admit this is a little frustrating, but the conclusions of one single experiment are not necessarily ubiquitous.
+
+They are not necessarily transferable or generalizable to all possible models and architectures and meta parameters and data sets in deep learning.
+
+And this is why you need to approach your deep learning endeavors as an experimental scientist.
+
+So you constantly want to be running experiments.
+
+Deep learning is a weird, complex, mysterious thing in the universe and we want to understand it.
+
+And our best chance for understanding it and getting the best out of it that we can is to be experimental scientists and to run experiments on our deep learning models.
+
+All of that said, there are a couple of, I guess, one key conclusion that we can draw from the seeming discrepancy in the previous slide, and that is more complex problems benefit from deeper networks.
+
+So when you're working on a really complex problem, that's hard to solve.
+
+It's very high dimensional.
+
+It's more abstract, then that kind of problem is going to be better served with a deeper network.
+
+So deeper both in terms of the model depth and also the model breadth.
+
+So just adding more parameters will help.
+
+And that's because deep networks are better at forming more abstract representations with less overall training.
+
+So the iris dataset is actually pretty simple.
+
+It's only four dimensions.
+
+There's only three different types and it's a simpler problem.
+
+It's not as complex of a mapping between input to categories.
+
+So therefore, for that particular case, adding more layers was just adding complexity, which was actually unnecessary and also increased the training time.
+
+All right.
+
+So I hope you enjoyed working through this code challenge, both in terms of getting the code to work, setting up the experiment, and in the interesting conclusions that we were able to draw from this experiment.
+
+In the next video, we are going to continue exploring different architectural choices and meta parameters in the next dataset.
+
+### CodeChallenge: Optimizers and MNIST
+
+> - Get more experience experimenting with optimizers and learning rates
+
+In this code challenge, you will explore the effects of different optimizers and also learning rates on MNIST categorisation performance.
+
+#### What to do
+
+![](.md/README2.md/2023-07-22-21-53-04.png)
+
+So in particular, what you want to do is open up these two code files.
+
+- [DUDL_FFN_FFNonMNIST.ipynb](../FFN/DUDL_FFN_FFNonMNIST.ipynb)
+- [DUDL_metaparams_CodeChallengeOptimizers.ipynb](../metaparams/DUDL_metaparams_CodeChallengeOptimizers.ipynb)
+
+So DUDL_FFN_FFNonMNIST.ipynb, that was from the beginning of this section and the code challenge on optimizers from the Meta parameters section and then basically integrate these two code files in order to test three different optimizers.
+
+So stochastic gradient descent, rms Prop and Adam and also six different learning rates going from zero point zero zero zero one to point one in six steps.
+
+And those can be logarithmic steps.
+
+So you want to use the same architecture that we used earlier.
+
+Well, OK, let me change that.
+
+The code the solution that I wrote has the same architecture that we used in the beginning.
+
+You are, of course, welcome to use any other architecture you like.
+
+Perhaps you want to use the best performing architecture that you discovered in the previous video.
+
+That's totally fine.
+
+Or make up your own architecture also totally fine.
+
+The important thing is to write code that will run an experiment, test the three different optimizers and several different learning rates.
+
+And then your results are going to look something like this, except you're actually going to see the results.
+
+![](.md/README2.md/2023-07-22-21-55-25.png)
+
+So we have the three lines corresponding to test accuracy for the three different optimizers over this range of learning rates.
+
+Now, I have quantified accuracy here as the average of the last ten training epochs from the test performance.
+
+So good luck.
+
+I hope you enjoy working through this challenge.
+
+When you're ready, you can come back and then I'll show you my solution.
+
+And we'll also talk about the results and what they mean.
+
+[DUDL_FFN_CodeChallenge_optimizers.ipynb](../FFN/DUDL_FFN_CodeChallenge_optimizers.ipynb)
+
+As with the previous code challenge, this experiment takes quite a while to run at some tens of minutes, so I'm not going to run it now in the video.
+
+But I will point out what I changed to get this code challenge to work.
+
+![](.md/README2.md/2023-07-22-21-56-43.png)
+
+So first of all, I defined the function that creates the network, that creates the model to take as input the optimizer algorithm and the learning rate.
+
+Now, you can see, unlike what we did in the previous video, I'm just hard coding the architecture here.
+
+![](.md/README2.md/2023-07-22-21-57-14.png)
+
+So we have the input layer, the first hidden layer, the second hidden layer with thirty two units and then the output layer going of course to 10 units.
+
+![](.md/README2.md/2023-07-22-21-57-39.png)
+
+This stuff is the same.
+
+So we just have a ReLU activation function calling each one of these layers here.
+
+And then let's see, of course we have cross entropy loss here.
+
+![](.md/README2.md/2023-07-22-21-58-04.png)
+
+And now here is the code that you'll recognize from earlier in the course.
+
+This basically allows us to soft code the actual optimizer that we want to run.
+
+So we get that attribute, which is going to get this string is going to map this string onto a method in torch.optim, which is this function here.
+
+And then we use that function with the learning rate that is specified as the input second input into this python function.
+
+OK, and then training the model is also pretty vanilla stuff at this point.
+
+![](.md/README2.md/2023-07-22-21-58-59.png)
+
+You can see, you know, you just want to be mindful that you are using these two inputs into this function.
+
+So you do need to be mindful of all these little changes that you're making from one code file to the next.
+
+But I think that's a good thing because it means that you are really meticulously thinking about each 
+line of code and not just copy pasting without really thinking about it.
+
+OK, so then here is our experiment.
+
+![](.md/README2.md/2023-07-22-21-59-34.png)
+
+We have the learning rates which go logarithmically spaced from point one to point one in six steps as specified in the video.
+
+And also the optimizer types are are these three gradient descent, rmsprop and Adam.
+
+So then the rest of this is not superduper novel.
+
+![](.md/README2.md/2023-07-22-22-00-12.png)
+
+So let me switch back to the slides and show you what the results look like.
+
+![](.md/README2.md/2023-07-22-22-00-37.png)
+
+So here you see the results from my run, I hope yours looks somewhat similar, you know, it's never going to be numerically identical, but I assume you got the same overall pattern.
+
+First of all, it's pretty beautiful aesthetically, right?
+
+Like, it's this nice kind of upside down you with a table balancing on top or something.
+
+It's just nice to look at nice symmetry in here.
+
+OK, but what is the important point?
+
+The important point is that we see that rms prop and adam do basically comparably well in this experiment
+
+for this architecture and this data set, whereas stochastic gradient descent also does well for large learning rates, but not for small learning rates.
+
+And the rms prop and adam actually do well for small learning rates and do poorly for large learning rates.
+
+Now, this is actually a conclusion that we can generally apply from rms prop and in particular adam.
+
+Now, I have mentioned I've explained in the previous section that these two optimizers actually change.
+
+They scale the learning rate as a function of the model performance and the recent history of the variance in the gradients.
+
+So because of that, these actually have built in dynamic learning rates.
+
+So therefore, Adam, an rms prop, tend to do better when you initialize the learning rate to something small, something relatively small compared to a relatively large number and stochastic gradient descent.
+
+If the learning rate is too small, then we basically run into varnishing gradient problems.
+
+So the learning rate is so small, each individual step is just super tiny.
+
+Now it could be it's possible that this model here with this learning rate would still learn pretty well.
+
+You know, this is like awful performance.
+
+It's possible that this model would learn well if you gave it, you know, 10000 training epochs instead of 100 training epochs
+
+But who has time for all of that stuff?
+
+So we see Adam and rms prop does really well.
+
+And do you want to use a smaller learning rate for these two algorithms because they will intrinsically adjust the effective learning rate through training?
+
+Very nice.
+
+
+I hope you enjoyed working through this challenge and also the previous code challenge.
+
+In the next couple of videos, we're going to continue exploring the MNIST data set and in particular the effect of manipulating the actual data.
+
+And that's going to inspire a shift from studying feed forward networks to studying convolutional neural networks.
+
+#### Scrambled MNIST
+
+> - See whether FFNs leverage spatial information during learning
+> - Get exctied to learn about CNNs!
+
+We are going to explore whether feedforward networks actually use spatial information that is present in the images during learning.
+
+This may or may not be a surprising result to you depending on your background in deep learning or machine learning.
+
+So you might be surprised at the outcome of this video.
+
+And either way, surprise or no surprise, I think you will be excited to learn about Convolutional neural networks.
+
+It's a pretty exciting field of deep learning, which we will get to later in the course.
+
+And in some sense this video is kind of setting us up for learning about CNNs.
+
+By the way, I don't often eat eggs, but when I do eat eggs, I like them scrambled.
+
+So you're going to see a couple of scrambled eggs references in this video.
+
+Okay.
+
+So what does it mean to scramble the Mnist data sets?
+
+#### DL breakfast: Scrambled MNIST
+
+![](.md/README2.md/2023-07-22-22-07-24.png)
+
+Well, it is literally something like this.
+
+So this is believe it or not, the numbers zero.
+
+This is the number four.
+
+Now, it might not look like a four to you, but the question is, will these feedforward networks that we have been working with be able to learn that this ridiculous collection of pixels actually corresponds to the number four?
+
+So how did I create these?
+
+Well, it looks like just random noise, but actually what I did was take the original image, which really did look like a four, and I just randomly scrambled the pixels around so totally randomly remapped the pixels in space.
+
+And then the that spatial remapping is constant for every image for all of these numbers, we cannot as humans, we cannot see that this is a zero.
+
+These three are zeros and you know, this is a five and so on.
+
+In principle, you know, this image should look really similar to this image because these are both nines.
+
+But so we as humans cannot really see this.
+
+The question is what is the feedforward model going to do?
+
+So let's switch to Python and we will see how to scramble these images and then we'll run through a test.
+
+[DUDL_FFN_scrambledMNIST.ipynb](../ffn/DUDL_FFN_scrambledMNIST.ipynb)
+
+There was actually only one thing, one cell in this notebook that we really need to change.
+
+![](.md/README2.md/2023-07-22-22-09-16.png)
+
+The rest of it is standard importing and normalizing the data that you've seen before.
+
+Here is where we get to scrambling the images.
+
+![](.md/README2.md/2023-07-22-22-09-35.png)
+
+So here I use numpy dot random dot permutation to generate a random sequence of numbers and maybe just to make sure that this is really clear what this is doing.
+
+I'm going to this is, by the way, a good strategy.
+
+If you see a line of code, you don't really understand what it does, then create a new cell in the code file and just run it with some simple input.
+
+![](.md/README2.md/2023-07-22-22-10-16.png)
+
+So here, instead of using data dot shape one, which is the number of columns in the data set and that corresponds to 784.
+
+So the number of pixels.
+
+![](.md/README2.md/2023-07-22-22-10-56.png)
+
+So instead of having a really large input, I'm just going to use the number five and then we can run this and the result is zero one. Sorry, it's already unsorted it here.
+
+![](.md/README2.md/2023-07-22-22-11-21.png)
+
+Okay, let's run this again and again and again and again.
+
+![](.md/README2.md/2023-07-22-22-11-42.png)
+
+So what you see is that this function random dot permutation, it is randomly permuting indices between 0 and 1 minus this number.
+
+Now there's a couple of additional options.
+
+If you like.
+
+You can check out the docstring here that's actually not relevant.
+
+So the point of us using this, the way that we are going to use this is to come up with a random permutation, a random swapping or reordering of the order of the pixels in the images.
+
+So now I have this variable scrambled equals data norm and then it's all of the rows.
+
+Those don't change and the columns are getting re sorted according to these indices here.
+
+So this is how we implement the sorting.
+
+Now notice that this sorting is applied to all of the images, so I'm not generating a different permutation, a different random reordering for each individual image.
+
+Instead, we come up with one random sorting and that gets applied to every image.
+
+All right.
+
+And then here, I'm just going to visualize a couple of these images and that you see here.
+
+![](.md/README2.md/2023-07-22-22-13-02.png)
+
+So basically the same thing as what I showed in the slides.
+
+So in theory, you know, these two things should look the same.
+
+And this one, this one, these three images here, they're all the number six.
+
+So somehow they should look like sixes.
+
+I don't know.
+
+Or at least look like each other.
+
+Anyway, let's see if our feedforward network can do a better job than your teacher can.
+
+![](.md/README2.md/2023-07-22-22-13-49.png)
+
+All right, so the rest of this stuff is the same here.
+
+I changed it previously.
+
+It was data norm.
+
+Of course, now it is scrambled.
+
+So I'm going to go through this rather briskly.
+
+This model architecture and loss function, everything is the same that we have been using before.
+
+Here I'm training the model that's also the same as we've done before.
+
+So let's have a look at the results.
+
+Maybe you can do a little drum roll on your desk and 
+
+![](.md/README2.md/2023-07-22-22-14-29.png)
+
+here we see the loss goes down and the loss gets really, really small.
+
+![](.md/README2.md/2023-07-22-22-14-42.png)
+
+And here is the final model accuracy 96%.
+
+This is even a little bit higher than what we have seen before with the intact images.
+
+So the training accuracy looks like it's up pretty close to 100% and the test accuracy is also pretty good, somewhere a little over 96%.
+
+Now, that kind of a result might seem surprising initially, but when you think about it, it actually shouldn't be so surprising.
+
+Remember that in this model we don't actually input the image into the model during training.
+
+Instead, we input the linearized vector.
+
+So a list of all 784 pixels, not the actual image.
+
+So that means that when we completely randomly re swap the pixels, the model doesn't know anything.
+
+All the model knows is that there's a list of 784 things.
+
+The model has no idea that those things are actually, you know, that they have some spatial structure, that they're all next to each other.
+
+The model is simply learning that some pixels being co-active are associated with the number zero,
+
+the category zero, and the model doesn't know or care where those things actually are in space, those pixels.
+
+So that is the reason why the accuracy actually doesn't change at all when we scramble the images.
+
+Now, this is not a the kind of result we would get for a CNN, a convolutional neural network, because convolutional neural networks are actually designed to extract local properties and features of images.
+
+So it's very interesting to see that the feedforward neural networks don't actually care about the spatial arrangement.
+
+And when we get to CNNs, you will see that, in fact, we are leveraging the spatial arrangement, the spatial autocorrelation structure in the data in order to maximize learning, while minimizing the total number of parameters that we need to learn the total number of weights.
+
+Okay.
+
+So I hope you're getting excited to learn about CNNs.
+
+The main point of this video was to drive home the idea, the concept that feedforward neural networks actually do not leverage spatial information during learning.
+
+Instead, they are merely learning more abstracted relationships of different pixels in the image.
+
+#### Shifted MNIST
+
+> - How to access data inside a dataloader object.
+> - How to shift ("roll") images in PyTorch
+> - A key limitation of FFNs that motivates using CNNs! (Similar to the previous video.)
+
+Following up on the previous video here in this video, we are going to explore the effects or possible effects of shifting images on learning performance and also the evaluation performance of test performance 
+
+In the process I'm also going to show you how to shift images in Py Torch, and I will talk a little bit more about accessing data inside these data load objects.
+
+Now, so far, we have been using these data loader objects.
+
+I haven't really talked a lot about them in a lot of detail.
+
+And I'm going to actually get into this more in the next section, the section on data there.
+
+I'm going to spend more time dissecting these data loader objects.
+
+So you have a better idea of what they are and how to work with them.
+
+But you will get some introduction in this video.
+
+OK, anyway, so we're going to discover another feature of feed forward networks.
+
+And that also might be a little surprising at first.
+
+And that is going to continue motivating us to switch to CNN for image processing, which comes a little bit later in the course.
+
+#### Shifting an image
+
+![](.md/README2.md/2023-07-22-22-20-42.png)
+
+OK, so what does it mean to shift an image?
+
+Well, it's pretty simple, pretty straightforward.
+
+Here we have the original image and here is that same image shifted.
+
+So the image is shifted to the right by, I don't know, 10 pixels, maybe some number of pixels.
+
+And then all of the images, all of the columns in the data over here actually get swapped.
+
+They move over here.
+
+So you can see the image is wrapping around.
+
+This little guy here corresponds to the edge here, which of the nine which was wrapped around the other side.
+
+So we would call these shifting.
+
+Turns out PyTorch calls this rolling an image.
+
+#### Our goal here
+
+![](.md/README2.md/2023-07-22-22-21-41.png)
+
+So here is what we are going to do in this video.
+
+So we know from the previous video it is trivial that shifting all of the images will not affect categorization performance.
+
+Right.
+
+Shifting is actually just a different way of reswapping all of the pixels.
+
+And we know from the previous video that that actually doesn't affect categorization accuracy.
+
+So what we're going to do in this video is determine whether that also applies to just shifting the test images.
+
+So we're going to leave the training data as they are and we are going to shift the test image by some number of pixels.
+
+OK, so now we switch to Python.
+
+I will show you a little bit about data lotas a little bit about shifting images and then we will get to the deep learning aspects.
+
+[DUDL_FFN_shiftedMNIST.ipynb](../FFN/DUDL_FFN_shiftedMNIST.ipynb)
+
+So normal stuff here and here and also creating a data loader, this is normal stuff here.
+
+Now, first of all, actually, maybe first let me let me go through the the these data loaders a little bit.
+
+![](.md/README2.md/2023-07-22-22-23-31.png)
+
+So we have the train loader.
+
+Let's just see what this looks like.
+
+OK, so we can see this actually just points to an address on the drive where this variable is actually stored.
+
+So that means this is an object.
+
+I can access attributes and methods of this object using the period.
+
+And I'm going to press tab on the keyboard to give me a list of what we have in here.
+
+![](.md/README2.md/2023-07-22-22-24-10.png)
+
+A few of these methods you will already recognize drop_last.
+
+That was an option that we use when we are creating these data loaders and so on.
+
+There's a couple that you can looking at.
+
+The main one that we want to use now is this one here called Data Set.
+
+![](.md/README2.md/2023-07-22-22-24-30.png)
+
+So now I'm going to press control, enter again on the keyboard to see, OK, so this is another object.
+
+This is a data set object and it's just at some location, some physical location.
+
+So now I'm going to press period again and then tab again.
+
+And now we see tensors, OK, now we're getting somewhere tensors are what PyTorch calls matrices.
+
+![](.md/README2.md/2023-07-22-22-25-04.png)
+
+So we see that train loader that data sets that Tensor is a tuple right, has some information separated by commas and surrounded by parentheses.
+
+So this is a tuple this is a two element tuple.
+
+So this is the first element in the tuple and the second element in the tuple.
+
+And you might have already guessed that this first element here corresponds to all of the images, the image data, and this one corresponds to the labels.
+
+Now it looks like it's all zeros.
+
+It's actually not all zeros.
+
+But remember, zeros numerically correspond to black pixels in the image.
+
+And all of these images are actually have black in the edges.
+
+So when when Python is only showing us the edges here, all we see are zeros.
+
+OK, so with that in mind, what I'm doing now is grabbing one image of data.
+
+![](.md/README2.md/2023-07-22-22-26-13.png)
+
+So the first element of this tuple tensors, and that is the image data that we see here.
+
+And then here I'm getting the first image from this entire tensor, OK?
+
+And then here I'm reshaping it to be two dimensional.
+
+So reshaping to twenty eight by twenty eight.
+
+Here is the function that actually does the shifting.
+
+So PyTorch calls it rolling.
+
+I don't know why they chose that term, but you know, I'm powerless to do anything about it.
+
+So what do these inputs here mean?
+
+![](.md/README2.md/2023-07-22-22-27-04.png)
+
+Well, you can probably guess that this first input corresponds to the image that we want to roll and then let's see what the other two inputs are.
+
+So put the cursor inside the function call and press shift tab and that gives the doc string here.
+
+![](.md/README2.md/2023-07-22-22-27-32.png)
+
+So we see that the inputs are the input, which is the thing that we want to roll.
+
+And then we have shifts, which is the number of pixels to shift by that you see here.
+
+![](.md/README2.md/2023-07-22-22-27-56.png)
+
+So the number of places by which the element of the tense are shifted.
+
+So it just means how many pixels we are shifting.
+
+And then we have dims, which is the dimension that we want to shift by.
+
+So the axis along which to roll.
+
+All right.
+
+
+So I call the output of this function tempS and then we can make an image of temp and tempS.
+
+![](.md/README2.md/2023-07-22-22-28-35.png)
+
+So not surprising, we get basically, you know, this is just what I showed in the slides in a few moments ago, so if you would like, you can pause the video and spend a little bit of time playing around with this, try some different parameters here, change the dimensions and see what that does.
+
+Actually, one of the additional explorations at the bottom of this code script is going to prompt you to explore this function more so you know not only how to shift images horizontally, but also vertically.
+
+OK, so I hope that's enough information.
+
+![](.md/README2.md/2023-07-22-22-29-27.png)
+
+So what we do now is loop through all of the images in the test loader and the test data set.
+
+And then we get that image.
+
+We roll it as exactly as I showed above, except here, instead of a specified number of pixels, we are rolling by a random number of pixels.
+
+So this is a random integer between minus 10 and plus 10.
+
+So every test image is going to be shifted horizontally by a slightly different amount, somewhere between minus 10.
+
+So 10 pixels to the left or to the right maximum.
+
+It could also be shifted by zero pixels by, you know, by chance.
+
+And then we put the data this shifted data back into the test loader data set.
+
+Of course, we have to reshape it into an image for the rolling and then we reshape it back into a vector to put it back in its place here in the test loader.
+
+OK, so run this cell.
+
+And now this is just a in to run the previous cell.
+
+So here.
+
+So now here was with the test image centered.
+
+This is the original test image.
+
+And now the idea is that when I run this again, I expect to see this one slightly shifted and shifted by a random amount and in a random direction.
+
+But I hope you can see that this is actually a little bit to the left now then compared to what it used to be.
+
+Very good.
+
+So we have now manipulated our test images by shifting them or rolling them horizontally.
+
+The rest of this code is basically the same.
+
+So I'm just going to go through it briskly.
+
+Here is the training and when this is finished, we can see the results.
+
+So this is pretty exciting.
+
+Do you have a hypothesis, by the way?
+
+Do you have an expectation about what kinds of results we might see?
+
+Remember, it's always good as a scientist, particularly as an experimental scientist, you should always make predictions before looking at the results.
+
+Even if you're wrong, it's totally fine.
+
+It's better to make a prediction and be wrong than not to make a prediction and just to passively accept whatever kinds of results arise.
+
+OK, so here are the results.
+
+![](.md/README2.md/2023-07-22-22-31-45.png)
+
+We can see the loss function goes down, but 
+
+![](.md/README2.md/2023-07-22-22-32-04.png)
+
+we can already see that this things are not going very well.
+
+Over here in MNIST land, we see the model test accuracy is 33 percent.
+
+That's really atrocious.
+
+That is horrible.
+
+The training did fine.
+
+You know, if the training accuracy was also down at 30 percent, then we would know that something went horribly wrong.
+
+Maybe we made a coding mistake somewhere.
+
+So the fact that the training data where we didn't actually change the stimuli, we didn't change the images, that's fine.
+
+So that means the model is doing what it should, but the model is simply not learning to generalize to the test images.
+
+So just shifting by, you know, maximum 10 pixels is is really damaging.
+
+It's extremely damaging.
+
+Still doing better than chance, I have to say.
+
+Chance, performance, remember, would be 10 percent accuracy.
+
+So the model is learning something.
+
+Somehow it's it's learning something that it can generalize to unseen images.
+
+But, yeah, overall, it's just it's not doing very well.
+
+#### Shifting an image
+
+![](.md/README2.md/2023-07-22-22-33-52.png)
+
+I would like you to take a moment and meditate on why that is the case, why does shifting have such a hugely negative impact on model performance when completely scrambling the pixels like we did in the previous video, actually had basically zero effect on the model performance.
+
+So you have seen in this video that feed forward networks are not robust.
+
+They are not able to deal with minor shifts in the locations of the images when that is used for testing compared to training.
+
+And this is actually a pretty severe limitation of feed forward networks.
+
+And also, to be clear, this is not a limitation of feed forward networks, period.
+
+We haven't discovered some horrible flaw of feed forward networks that make them unusable.
+
+Instead, this is a key limitation of feed forward networks for image processing.
+
+This limitation is really just about image processing, but this really motivates the use of convolutional neural networks, which we will get to a bit later in the course.
+
+### CodeChallenge: The mystery of the missing 7
+
+> - Explore an interesting application of deep learning
+> - Improve your ability to modify DL models.
+> - Have fun! (I hope...)
+
+I really enjoyed developing this code challenge, and I hope that you enjoy it as well.
+
+I call this video the mystery of the missing seven and the goal here.
+
+#### How does a DL model classify things it has never seen?
+
+![](.md/README2.md/2023-07-22-22-39-49.png)
+
+The goal of this challenge is to explore how a trained, deep learning model behaves when it's presented with images that it has never seen before, never trained on before.
+
+So entire categories that the model doesn't know what to do with.
+
+So in particular, here is what you want to do, train a feed forward network on the most data set on all of the numbers except for the number seven.
+
+So you want to train this model to classify zero one, two, three, four, five, six and then eight and nine.
+
+So that means during training, the model never sees the number seven. 
+
+Any number seven.
+
+OK, now you don't actually need to have a separate train and test split.
+
+In this particular case, you don't need to partition the data into a separate test.
+
+But because the sevens are actually the test data set.
+
+So all of the numbers except for the sevens, all of the numbers are used to train the model.
+
+After you finished training them, you show the model the sevens.
+
+And the question is, what is the model going to do?
+
+How will the model respond to sevens?
+
+What is it going to categorise the sevens as, given that it's never seen sevens before?
+
+Now, I want to leave this a little bit open to you.
+
+I want you to have the freedom and creativity to explore the model behavior as you like.
+
+I'm going to show you two screenshots from my solution.
+
+But of course, that doesn't mean that you necessarily have to reproduce the figures that I have or that you are limited to the figures that I have done.
+
+If you have other ideas for how to explore the model, then go for it.
+
+#### Scenes from the codeChallenge
+
+![](.md/README2.md/2023-07-22-22-40-17.png)
+
+OK, so here are some funny results.
+
+So again, this is a test set.
+
+So these are all sevens, but the model has never seen a Category seven in training.
+
+So the model thinks that this is actually a nine.
+
+It thinks that this is the nine.
+
+I would have guessed that this would be a one.
+
+Actually, this one gets a three.
+
+That's a little funny to think that if it thought this was a three, you can see actually most of the time the model guessed nine, which is not that surprising.
+
+This one actually this one really looks like a four.
+
+This is easily confusable with a four.
+
+![](.md/README2.md/2023-07-22-22-41-14.png)
+
+OK, so this is one image I created another map here that shows the proportion of times that seven was labeled as these different categories. 
+
+So this is what I just mentioned on the previous slide, that the majority of times the model mislabeled a seven as a nine.
+
+So that was around 60 ish, but over 60 percent of the time.
+
+And you can see that the model also confused seven with two and one and three and so on.
+
+Obviously, it never confused.
+
+It never labeled seven as of seven because it never learned this during training.
+
+OK, so pause the video.
+
+So enjoy yourself, have fun, be creative, go nuts.
+
+And when you're ready, you can come back to thescikit video.
+
+I'm going to show you my solution.
+
+[DUDL_FFN_CodeChallenge_missing7.ipynb](../FFN/DUDL_FFN_CodeChallenge_missing7.ipynb)
+
+So import the libraries, import the data.
+
+![](.md/README2.md/2023-07-22-22-42-53.png)
+
+Notice that I'm still normalizing all of the data, including the Sevan's, so the train and the test data, which are the Sevens, get normalized still to the same range.
+
+It's only down here where I start to actually separate the data into not Seven's and with sevens.
+
+![](.md/README2.md/2023-07-22-22-43-59.png)
+
+So I convert the data to PyTorch tensors.
+
+Here is where I'm actually finding all of the sevens.
+
+So it is a little confusing if you're not really used to working with Boolean vectors, but you have the single equal sign here for assignment to this variable, this vector where seven and then here is a boolean test, this test for where the labels equals the category seven.
+
+So this thing here is a boolean vector.
+
+That's true or false, and it's going to be true wherever there is a seven and false where there isn't a seven.
+
+And so that's how we separate the data here.
+
+
+So these are all of the data where there is No Seven.
+
+So this is going to be used for training.
+
+You can see I'm negating this boolean vector, so all the truths turn to falsies and false is telling the truth.
+
+And then here I have data seven.
+
+And this is the from the original data where we have a seven.
+
+So all of the samples where there was a label of seven.
+
+OK, and then I create the train.
+
+Let me see.
+
+Let me go on here.
+
+So the train loader is created from the entire data set that doesn't contain seven, so excluding seven.
+
+And the test loader is the entire data set that does contain seven.
+
+And here's just a quick confirmation.
+
+![](.md/README2.md/2023-07-22-22-45-31.png)
+
+What we should see here is all the numbers from zero through nine except for seven.
+
+And that just confirms that what that the code that I wrote up here is correct.
+
+OK, so this code here, there's some new stuff here.
+
+![](.md/README2.md/2023-07-22-22-46-01.png)
+
+Here there isn't really anything new except I'm going back to giving the output in log softmax, which means I also need to use the loss function and NLLLoss()
+
+And this is because I would like to inspect the probabilities of the model giving each of the ten categories.
+
+So I want this to be log softmax instead of just the raw numerical output.
+
+OK, very good.
+
+So that is more or less the same.
+
+The function that trains the model is basically the same, except that we don't actually need to do any testing here.
+
+So the testing doesn't need to happen inside the training apoc.
+
+So here we have all of the the for loop over all of the training aspects.
+
+Here we loop over the, the mini batches in the train loader and then you can see I've just deleted a bunch of code here.
+
+This is normally where you would have the code to test the model performance on the test set or the deficit, but we don't need to do that here.
+
+All right.
+
+So now we are going to train the models.
+
+So again, this is only training on the the training set, which does not include any sevens.
+
+And then here I'm going to show the losses and the train accuracy.
+
+And this is basically just to confirm that the model is still performing really well, even without the sevens included.
+
+So let's see how the model performed on the training set.
+
+![](.md/README2.md/2023-07-22-22-48-12.png)
+
+So the losses go down all the way to the bottom.
+
+![](.md/README2.md/2023-07-22-22-48-53.png)
+
+The model accuracy is ninety nine point nine nine percent.
+
+That's like super duper high accuracy.
+
+Of course, this is the training data.
+
+So this includes some mix of real learning and a little bit of overfitting as well.
+
+But this just confirms that the model still works really well, even though we are missing the sevens,
+
+even though we're missing an entire category.
+
+OK, so now for the mystery test.
+
+What we do here is export the data or grab the data out of the test loader.
+
+![](.md/README2.md/2023-07-22-22-50-06.png)
+
+Now, normally we have a construction like X, comma Y, but here we don't actually need the labels.
+
+Right.
+
+The labels are all seven and it doesn't really matter what the labels are anyway.
+
+So we only need the first of the tuple, the first element of the tuple that comes from this batch.
+
+That's iterable.
+
+So that's why I have this zero here.
+
+OK, and then we run the data through the trained model, detach the numerical values from the additional information that PyTorch keeps in these objects, like about the the gradient and so on, and then compute argmax from each row, which tells us what the model thinks that this number actually was.
+
+OK, so here we are going to show a couple of test images and their labels.
+
+This is the same thing I showed in the slides.
+
+![](.md/README2.md/2023-07-22-22-51-07.png)
+
+So we can see that the model often mis labels or thinks that this seven is a nine.
+
+It's pretty frequent.
+
+And here's this one.
+
+This looks like.
+
+Look easily confusable for one.
+
+OK, so that's that.
+
+And then here is the code to write another graph that I showed in the slides.
+
+![](.md/README2.md/2023-07-22-22-51-34.png)
+
+This shows the proportion of times that seven was labeled as each one of these other numbers.
+
+Obviously, it's not going to be exactly identical to what I showed in the slides or what you get on your computer because of random weight initialization and so on.
+
+But overall, it looks pretty similar.
+
+The model clearly prefers to think that sevens are nines and there's also quite a bit of twos and threes going on here.
+
+OK, so this is this and I did one more visualization, which is something we have done before.
+
+This was in one of the first videos of this section where we plot the evidence for each of the numbers from one sample.
+
+So I'm going to pick sample number 12.
+
+So we just get predictions for this particular item, this particular number seven and plotts, the EXP, because these are the log softmax outputs.
+
+So inverting the natural log with the natural exponential is going to give us the numbers that we can interpret as probabilities.
+
+So this is pretty interesting to look at.
+
+![](.md/README2.md/2023-07-22-22-53-09.png)
+
+You can see that although the model labeled this seven as a nine, I'm not actually showing the seven, but it would be a good idea.
+
+So maybe if you like, you can also modify my code so that it's also showing the actual picture of your sample to show twelfth of twelfth sample here anyway.
+
+So it's interesting to see that although the model labeled this image as a nine Category nine, it also 
+gave pretty strong evidence for it being a two and a three and a little bit for an eight.
+
+So we can try other numbers.
+
+How about 30?
+
+And here we see the model is really convinced that this was number two with about eighty five or maybe is around 90 percent.
+
+So I hope you enjoyed working through this code challenge.
+
+It's always interesting to push these models outside of their comfort zone, outside of what they are used to working with, to see how they perform and how they categorize data that not only have they not seen the exact data, they've also never seen data that are like those data.
+
+So data from totally different categories.
+
+### Universal approximation theorem
+
+> - Explore an interesting application of deep learning
+> - Improve your ability to modify DL models.
+> - Have fun! (I hope...)
+
+The universal approximation theorem is one of the most important theoretical underpinnings of deep learning, if you haven't heard of the universal approximation theorem, then you're in for a treat.
+
+It's a really wild theorem, and if you have heard of it, then this video will serve as a bit of a reminder.
+
+#### Universal approximation theorem
+
+![](.md/README2.md/2023-07-22-23-05-59.png)
+
+So what is the UAT as it's sometimes abbreviated.
+
+So the universal approximation theorem basically says that a deep learning network that is sufficiently wide or sufficiently deep can approximate any possible function where a function is a mapping between a set of inputs and outputs.
+
+So, for example, the input might be pixels in an image and the output is a category of that image,
+
+like a cat or a giraffe, or the input might be a list of features of different houses and the output might be the sale price of those houses.
+
+OK, so that is a function.
+
+It's a mapping between some inputs and one or more outputs.
+
+And this mapping is the entire purpose of training and using deep learning networks, not only feed forward networks, but also RNN's and CNN's and Gan's and Vae's and all sorts of crazy deep learning architectures.
+
+Really, all of these deep learning architectures are just designed to learn functions.
+
+They learn input output mappings.
+
+And the UAT says that a sufficiently wide or deep network can approximate any possible function that we can come up with.
+
+There is a mathematical representation of this statement which looks something like this.
+
+![](.md/README2.md/2023-07-22-23-01-20.png)
+
+Now, if you are not used to looking at math notation, this expression might seem a little bit mysterious and difficult to parse.
+
+So let me take a moment to explain all of the different components of this.
+
+So we're all on the same page about how to interpret this statement.
+
+![](.md/README2.md/2023-07-22-23-03-07.png)
+
+So this sup here, this is actually short for Supreme or largest.
+
+So this means the largest given a that's the largest value, given some input X or a set of inputs X and set of parameters theta.
+
+Now this theta here refers to all the parameters.
+
+So the trainable parameters like the weights and the biases and also the hyper parameters that you choose,
+
+like the learning rate, the optimizer, the model architecture and so on.
+
+These double vertical bars here are for the absolute value 
+
+F is for the function that is really out there in the real world.
+
+So this is the true function and G of Theta is the function that represents the deep learning model.
+
+So this is a representation of the entire model that we are working with.
+
+![](.md/README2.md/2023-07-22-23-04-15.png)
+
+So the model of X, given these parameters and then this whole expression here is saying the difference between the function in the real world, the true input output mapping and the output of our deep learning network, given the inputs and given these parameters.
+
+And then we take the absolute value because we don't actually care about the sine we don't care if this is positive or negative.
+
+We just want to know whether there is an error, what the discrepancy is.
+
+OK, so the largest possible discrepancy between the real world mapping and the mapping or the function that our deep learning network has learned that largest possible error is smaller than Epsilon, where Epsilon is some arbitrarily small number.
+
+![](.md/README2.md/2023-07-22-23-04-50.png)
+
+There isn't a specific numerical value attached to this parameter.
+
+It's just an arbitrarily tiny number.
+
+You often see expressions like this in calculus and optimization.
+
+OK, so essentially this formula here, this expression is saying that the largest difference between the model output and the true state of the world, the true function is is arbitrarily small.
+
+So what does this thing mean?
+
+What does that mean?
+
+#### Universal approximation theorem
+
+![](.md/README2.md/2023-07-22-23-08-44.png)
+
+Well, it means that a deep learning network.
+
+So there exists some deep learning network architecture and set of parameters that can solve any possible problem or perform any possible task as long as that task can be somehow represented as a mapping between inputs and outputs.
+
+Now, this is a very bold statement.
+
+This is a very big claim.
+
+Why is this true?
+
+Why do we trust the universal approximation theorem?
+
+![](.md/README2.md/2023-07-22-23-06-59.png)
+
+Well, it basically has to do with the combination of the linear weighted sums and the nonlinear activation functions.
+
+And because there are so many of these, there are so many linear weighted combinations and nonlinear activation functions that basically guarantees that any mapping from any given space to any other space is theoretically possible.
+
+This is also, you know, these are also just a bunch of words that I'm throwing up here on the slide, there is a full mathematical proof.
+
+There's a rigorous proof for this, which I'm not going through here just because I think, you know, it's a pretty involved proof and it's outside the scope of this course.
+
+If you're math inclined and you're curious, you can look it up online.
+
+But the gist of it is that we can generate a deep learning network that is sufficiently complex.
+
+It combines all of the different inputs in sufficiently sophisticated ways, both linear and nonlinear,
+
+and that guarantees that any mapping is going to be possible.
+
+Now, let me also be clear that the universal approximation theorem is a theoretical claim.
+
+![](.md/README2.md/2023-07-22-23-09-26.png)
+
+the UAT does not guarantee that any given function that you create is going to be arbitrarily good at classifying.
+
+Of course, we've already seen that many times.
+
+We've seen many models that do terrible, you know, that get like barely above chance level performance.
+
+We've also seen many models that do pretty well, like, you know, 90 percent, 95 percent accuracy,
+
+but not incredibly well.
+
+So the universal approximation theorem is about the theoretical possibility of a deep learning network approximating any function arbitrarily, closely.
+
+![](.md/README2.md/2023-07-22-23-10-11.png)
+
+It doesn't mean that it always happens in practice.
+
+That depends a lot on the network architecture.
+
+It depends on how much data you have to train.
+
+It depends on your computing power.
+
+You know, we cannot just design arbitrarily large and arbitrarily complex networks.
+
+We have some practical, real world limitations.
+
+![](.md/README2.md/2023-07-22-23-10-43.png)
+
+So, again, the UAT does not guarantee that the model architecture you have picked is going to solve any given problem.
+
+It just guarantees that there is a theoretical possibility for a deep learning network to solve the problem that you are working on now.
+
+![](.md/README2.md/2023-07-22-23-11-17.png)
+
+This UAT relies on the assumption that the network is shallow but arbitrarily wide or arbitrarily deep, but narrow or both are also fine.
+
+So, you know, it might be theoretically possible to get perfect categorization with the MNIST data set with only one layer, with one input layer and no hidden layers.
+
+But maybe that input layer would need to be 10 quadrillion units.
+
+You know, you would need a huge number of units and you would need like a trillion examples of training and then it could work.
+
+So you can see that the UAT is more of a theoretical concept.
+
+It doesn't guarantee how things are going to work out in practice here.
+
+![](.md/README2.md/2023-07-22-23-12-18.png)
+
+I just wanted to give you a brief reminder of of broad and deep networks so the UAT could be true in practice.
+
+But maybe we need, you know, 10 million nodes in this network, which we just don't have enough data to train in most cases.
+
+OK, so that is the UAT, essentially the implication of this theorem for deep learning and the way that you can start thinking about conceptualizing deep learning models is that they are simply functions at approximate other functions.
+
+So we are training a network that can approximate some function, some input output mapping that really exists out there in the real world.
