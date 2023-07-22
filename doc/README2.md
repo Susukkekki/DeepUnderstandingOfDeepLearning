@@ -18,6 +18,13 @@
     - [CodeChallenge: Binarized MNIST images](#codechallenge-binarized-mnist-images)
       - [Does our FFN need a range of pixel values?](#does-our-ffn-need-a-range-of-pixel-values)
       - [Does our ANN need a range of pixel values?](#does-our-ann-need-a-range-of-pixel-values)
+    - [CodeChallenge: Data normalization](#codechallenge-data-normalization)
+      - [Normalizing data (reminder)](#normalizing-data-reminder)
+      - [Goals for this codechallenge #0](#goals-for-this-codechallenge-0)
+      - [Goals for this codechallenge #1](#goals-for-this-codechallenge-1)
+      - [Goals for this codechallenge #2](#goals-for-this-codechallenge-2)
+      - [Dicussion: Loss vs. accuracy](#dicussion-loss-vs-accuracy)
+      - [Take-home messages](#take-home-messages)
 
 ## FFNs (Feed-Forward Networks)
 
@@ -1366,3 +1373,453 @@ So I wonder whether you are surprised or not surprised at the results.
 The key point here is that sometimes the model can really leverage the full range of data values in a particular data set, and sometimes it doesn't.
 
 The features are so apparent that the model doesn't even care about the relatively subtle features in the data, like any values between zero and one.
+
+### CodeChallenge: Data normalization
+
+> - Have a reminder of data normalization
+> - Learn about the importance of normalizing the training and testing data
+> - Understand the difference between 'loss' and 'accuracy'
+
+You know, I thought the previous code challenge in the previous video was maybe a little bit too easy,
+
+maybe it wasn't challenging enough, and so therefore I thought I would add another code challenge in this video still about data normalization, but taking a slightly different perspective.
+
+I think the conclusions from this video, the learning opportunity in this video is going to be really interesting, both in terms of normalization and the relevance and importance of normalizing the training data and the testing data.
+
+And also, this is a bit of a reminder.
+
+This is something I've discussed before, but the difference between the loss, the the numbers of the loss and the numbers of the accuracy.
+
+#### Normalizing data (reminder)
+
+![](.md/README2.md/2023-07-22-17-56-25.png)
+
+So let me first begin by tugging<sup>잡아당기다</sup> on your memory strings a little bit about the importance of normalizing data.
+
+Now, you'll remember I've discussed this twice now already in the course that if you have different samples of data with very different numerical ranges, then you can get the loss is going to be very different for these two samples, these two images, these two digits, whatever these two columns of data represent, the loss is simply going to be numerically larger for this one than this one just because the raw input values are larger.
+
+So this is one reason why it's important to normalize your data.
+
+And here's a quick reminder about Min Max scaling.
+
+![](.md/README2.md/2023-07-22-17-58-00.png)
+
+And the idea here is just to rescale the data so that the smallest value turns into zero and the largest value turns into one and all the data points in between our linearly scale.
+
+So the relationship between the successive data points is the same before and after scaling.
+
+Here was the formula for that.
+
+![](.md/README2.md/2023-07-22-17-58-30.png)
+
+But I think you have this in your notes.
+
+OK, so that brings us to this video and this code challenge.
+
+What are we going to do here?
+
+#### Goals for this codechallenge #0
+
+![](.md/README2.md/2023-07-22-17-59-08.png)
+
+Well, this code challenge actually has three parts.
+
+So Part zero starting numbering at zero because we're working on Python.
+
+So you want to start from the code in the previous video.
+
+[DUDL_FFN_CodeChallenge_binMNIST.ipynb](../FFN/DUDL_FFN_CodeChallenge_binMNIST.ipynb)
+
+So make a copy of the code from the previous video, the previous code challenge, and then what you want to do is normalize.
+
+So we're not doing binarization anymore.
+
+So normalize the training data to a range of zero to one and also normalize the test data to range of zero to one.
+
+So same exact numerical range for the training data and the test data.
+
+Then you want to make a plot of the losses and accuracy as a function of training epoch for the training data set and for the test data set now to confirm that you really have the normalization. Correct.
+
+![](.md/README2.md/2023-07-22-18-01-14.png)
+
+I want you to print out a message that looks something like this.
+
+So you print out training data range and then the smallest value and the largest value and the test data range the smallest value to the largest value.
+
+If you want, you can copy the code here, but you can also figure it out how you do it on your own.
+
+Totally fine.
+
+The point is that you want to print out the empirical minimum and maximum values to confirm that you have normalized to the correct numbers.
+
+OK, this is part zero.
+
+#### Goals for this codechallenge #1
+
+![](.md/README2.md/2023-07-22-18-02-17.png)
+
+Then we get to part one, which is basically the same thing, except, well, first of all, you don't actually need a new code file.
+
+You can use the same notebook for all three of these versions of the code challenge.
+
+[DUDL_FFN_CodeChallenge_binMNIST.ipynb](../FFN/DUDL_FFN_CodeChallenge_binMNIST.ipynb)
+
+So you want to make one minor change compared to code challenge number zero, and that is that the training data are still normalized to a range of zero to one.
+
+But the test data are left in their original range.
+
+So scale between zero and 255.
+
+And here you see that confirmed empirically down here.
+
+So that training data are normalized to zero to one.
+
+The testing data are go from zero to 255.
+
+Well, that is number one.
+
+#### Goals for this codechallenge #2
+
+![](.md/README2.md/2023-07-22-18-04-22.png)
+
+You can probably guess what code challenge number two is going to be, which is actually the third code 
+part of this code challenge that's to swap them.
+
+So now you want the test data.
+
+Maybe this is confusingly written because I swapped the labels instead of the colors here.
+
+But anyway, so now the training data go from zero to 255 and the test data go from zero to one.
+
+So, again, let me review.
+
+You want to run through the code three times once, normalizing the training data and the test data
+
+both to zero to one, and then you want to normalize the training data to zero to one, but leave the
+
+test data in the original scale of zero to 255.
+
+Finally, you want to leave the training data in their original numerical range, zero to two fifty five and normalize the test data to zero to one.
+
+And then once you get these three sets of results, it is time for you to think you might be surprised at the results, you see, so try to give yourself some time, meditate on this for a little while and see if you can understand or gain some intuition into why you get the results that you get.
+
+All right.
+
+So pause the video switch to Python.
+
+I hope you enjoy working through this challenge.
+
+When you're ready, come back to the video.
+
+I'm going to show you my solution.
+
+It's actually fairly quick and easy.
+
+And then we'll come back to the slides.
+
+We'll have a little discussion about why we get the results that we get.
+
+[DUDL_FFN_CodeChallenge_normalization.ipynb](../FFN/DUDL_FFN_CodeChallenge_normalization.ipynb)
+
+OK, so here we are in the code file code challenge normalization.
+
+Now there's really only a couple of lines of code that you need, really just two lines of code that you need to modify here.
+
+```python
+# REMINDER:
+# 0) normalize train to [0 1] and test to [0 1]
+# 1) normalize train to [0 1] and test to [0 255]
+# 2) normalize train to [0 255] and test to [0 1]
+train_data = train_data/torch.max(train_data)
+test_data  = test_data/torch.max(test_data)
+```
+So previously in the past couple of videos, we were normalizing the data basically up here, like right when we imported the data, we normalized it immediately.
+
+So I put the normalization here after I call it step two, splitting the data into train and test.
+
+So here I have train data equals itself, divided by the maximum value, which is two fifty five.
+
+And the test data equal itself, divided by 255.
+
+So now it's fairly straightforward.
+
+All you have to do is go through the entirety of the code once with both of these lines intact, once with one line of code commented out and then again with the other line of code commented out.
+
+Otherwise you don't need to change anything.
+
+Here's the code, which I also added to to print out the ranges.
+
+```python
+# Confirm ranges of train and test data
+
+print('Training data range %g to %g' 
+      %(torch.min(train_loader.dataset.tensors[0]),torch.max(train_loader.dataset.tensors[0])) )
+
+print('Test data range %g to %g' 
+      %(torch.min(test_loader.dataset.tensors[0]),torch.max(test_loader.dataset.tensors[0])) )
+```
+
+But I showed you this code in the slides and the only other thing that I changed is I decided to get rid of the explicit log softmax here inside the model.
+
+```python
+    # forward pass
+    def forward(self,x):
+      x = F.relu( self.input(x) )
+      x = F.relu( self.fc1(x) )
+      x = F.relu( self.fc2(x) )
+      return self.output(x)
+```
+
+So now the model is only outputting the raw values, not normalized or softmaxified.
+
+And then I went back to the cross entropy loss loss function, which will internally compute log softmax from the raw numerical outputs.
+
+OK, now I'm not going to run through all of the code right now in the video.
+
+I've already done that.
+
+![](.md/README2.md/2023-07-22-18-09-23.png)
+
+And here you can see the results now, the plots are awfully small, I apologize for the probably unreasonably
+
+small fonts, but you don't actually need to see the actual font size.
+
+The important thing to note is that when they're normalized to the same range training test, you get good accuracy.
+
+This is what basically exactly what we've seen before, 95 percent accuracy here's was kind of interesting.
+
+![](.md/README2.md/2023-07-22-18-11-08.png)![Alt text](image.png)
+
+And maybe you found this surprising when we trained on data from zero to one.
+
+So we normalized the training data, but not the testing data.
+
+We still got pretty good accuracy.
+
+Now, the loss was numerically way higher.
+
+It was much higher.
+
+You can see here the lost value is around.
+
+Point to, I guess, somewhere towards the end, maybe a little bit less than point two.
+
+And here for for training the the lost value.
+
+Numerical values are still tiny, but for test the loss values are pretty large.
+
+There's somewhere around 40.
+
+So like two orders of magnitude larger.
+
+![](.md/README2.md/2023-07-22-18-11-28.png)
+
+And here this is also quite a striking result.
+
+Here is where we trained on the full range of data, zero to two fifty five and we tested on zero to one.
+
+So we normalized the test data.
+
+And here at the model did really terrible.
+
+I mean, it was 20 percent.
+
+That's horrible.
+
+That's really bad.
+
+And here you see as well, not only is the loss function much higher numerically, although not quite as high as here, it's higher numerically, but it also just barely goes down over training.
+
+OK, so let me draw a few conclusions and then I will try to give a geometric interpretation of this pattern of findings.
+
+#### Dicussion: Loss vs. accuracy
+
+![](.md/README2.md/2023-07-22-18-12-51.png)
+
+So first of all, the losses are scale dependent.
+
+This is something that we have discussed before in the course.
+
+So losses are scale dependent.
+
+They depend on the numerical scale of the data.
+
+Accuracy, in contrast, is boolean for any individual item, of course, for any individual image or individual data point.
+
+So average across accuracy is going to vary or it's going to be bound by zero and one hundred percent.
+
+So what this means is that you should look at the losses.
+
+The losses are important to inspect, but what you want to look for in the losses is the overall shape of the loss function with learning.
+
+So you want to see that the losses are going down and you don't want to see that they're sort of going back up.
+
+That indicates overfitting.
+
+You don't want to see that the losses are still going down and haven't yet asymptote<sup>점근, 점점 가까워짐</sup> it.
+
+When you finish training, that indicates that there's more to learn.
+
+So you want to see that the loss function goes down and then it gets kind of flattish<sup>약간 평평한, 좀 단조로운</sup> towards the end.
+
+The actual numerical values of the losses are less important and less interpretable because they are dependent on the numbers in the data.
+
+In contrast, accuracy is a metric that you can really compare across different data sets, across different types of models, different model architectures and so on.
+
+So losses are important, but it's more about the shape.
+
+OK, so now I want to try to present a geometric perspective of why we get the pattern of results that we get depending on whether we normalize the training data or the testing data.
+
+![](.md/README2.md/2023-07-22-18-15-59.png)
+
+So if you imagine that we have three dimensional data, then we can plot their three dimensional data in a three dimensional Cartesian graph like this.
+
+Of course, the MNIST data are seven hundred and eighty four dimensional.
+
+So it's it's not really possible to draw a seven hundred and eighty four dimensional graph.
+
+So this is a bit of an abstraction.
+
+We just want to imagine that we have three dimensional data.
+
+![](.md/README2.md/2023-07-22-18-16-56.png)
+
+OK, so now imagine that these vectors here are these lines point in the data space where there are where there is Category one and category two.
+
+So these are the vectors that the model has learned that point in the direction of Category one and Category two.
+
+So now imagine that this blue sphere corresponds to the training data in this sphere is limited.
+
+You can imagine it's a unit sphere, so it has a radius of one because we have normalized the data.
+
+So here we have the the test data, which are also in this green sphere and it's also in the same range.
+
+![](.md/README2.md/2023-07-22-18-17-56.png)
+
+I drew it with an offset here.
+
+And that's just for visualization in practice, you know, these would overlap if you normalize the
+
+train data and the test data in the same way.
+
+This is like the normal scenario.
+
+This is what you should be doing.
+
+The train data and the test data are normalized the same to the same range.
+
+OK, now let's imagine another scenario.
+
+![](.md/README2.md/2023-07-22-18-18-44.png)
+
+We train on the data that are normalized so all the training data fit inside this little sphere.
+
+But we do not normalize the test data.
+
+So they live in a much bigger sphere.
+
+That's all the way out here.
+
+So different test items are going to look something like this in different categories.
+
+![](.md/README2.md/2023-07-22-18-19-37.png)
+
+Now, this vector, which points to.
+
+Category two, because this was trained on UN data with a smaller numeric range, we get to the test,
+
+this vector basically gets projected out.
+
+So to neighboring vectors down here, you know, if there was another the yellow vector is over here
+
+for Category one, two neighboring vectors.
+
+The further out they get from the origin, the further apart they get.
+
+So the more they spread apart.
+
+You can imagine that the yellow vector is here.
+
+They're close together as they go further and further out, the orange vector and the yellow vector
+
+get further apart from each other.
+
+So therefore, if you train on data that is normalized and test on data that is non normalized, that's larger.
+
+It's further away from the origin of the space, the data space, then it's not necessarily a problem because if anything, the differences between categories is getting larger as we get further out into this space.
+
+OK, so that's why if you normalize the train data, don't normalize the test data, it's it's not so horrible, you know, not the best idea.
+
+I'll talk about that in a moment, but it's not necessarily fatal.
+
+![](.md/README2.md/2023-07-22-18-21-27.png)
+
+Here is the other situation that we saw where the training data were spread out.
+
+They were much further away from the origin.
+
+The values went up to 255.
+
+So the data cloud in the data space was much larger, as far away from the origin.
+
+Now we're training all the way out here.
+
+But now when these vectors that are pointing at different directions, corresponding to the different
+
+categories, when they need to be projected further down, closer to the origin for the test data,
+
+which are normalized and are much closer to the origin of this space, those two vectors, those two
+
+discriminating vectors get compressed and now they're closer to each other.
+
+So it's harder to discriminate because the training was made so far away and the testing was made so
+
+close to the origin of this space.
+
+So I hope that makes sense.
+
+That's a little bit of geometric intuition for why we get the pattern of results that we saw here.
+
+#### Take-home messages
+
+![](.md/README2.md/2023-07-22-18-25-07.png)
+
+So the take home messages are very simple.
+
+Always normalize your data.
+
+Couldn't get more simple than that.
+
+But of course, you have to see the effects for yourself.
+
+You have to experience how not normalize the data can make the model do perform horribly.
+
+Otherwise you never really learn that lesson.
+
+OK, so always normalize your data, normalize the training data and the testing data using the same normalization factors of the same constants.
+
+We'll get back to this issue when we get to working with images in the CNN section, but basically always make sure that your training data and your testing data are normalized using the same normalization constants or factors or equations.
+
+Normalization is good.
+
+It helps prevent overflow, and underflow is basically different kinds of numerical accuracies associated with ginormous numbers and tiny, tiny numbers.
+
+So normalization also helps with this.
+
+This we discussed earlier.
+
+And now finally, keep in mind that some data sets and some models can still perform pretty well without normalization.
+
+You've already seen a couple of examples of that earlier in the course, like with the regression problems, we didn't normalize the data with the qwerties, we didn't normalize the data.
+
+But in general, when data and models work without explicitly normalizing, it's usually because the original data in their raw numerical range are already fairly well normalized.
+
+But here's the key thing.
+
+Just because a model might work without normalizing the data, don't make that assumption always just normalize as a point of habit whenever you are training and evaluating models.
+
+So that's the end of this code challenge.
+
+I hope you found it inspiring and insightful.
+
+We discussed the importance of data normalization and a reminder about the difference between loss and accuracy for evaluating model performance.
