@@ -15,6 +15,9 @@
       - [Softmax vs. log-softmax](#softmax-vs-log-softmax)
       - [FFN with lin-softmax](#ffn-with-lin-softmax)
       - [FFN with log-softmax](#ffn-with-log-softmax)
+    - [CodeChallenge: Binarized MNIST images](#codechallenge-binarized-mnist-images)
+      - [Does our FFN need a range of pixel values?](#does-our-ffn-need-a-range-of-pixel-values)
+      - [Does our ANN need a range of pixel values?](#does-our-ann-need-a-range-of-pixel-values)
 
 ## FFNs (Feed-Forward Networks)
 
@@ -1237,3 +1240,129 @@ Here, the model was really confused.
 You can see the model gave a large, relatively large probability value for lots of numbers and it eventually went with one.
 
 I can also see that.
+
+### CodeChallenge: Binarized MNIST images
+
+> - Acquire experience with normalizing image data
+> - Learn more about DL on images
+
+The goal of this challenge is to continue exploring the importance of data normalization and in particular the range of numerical values.
+
+#### Does our FFN need a range of pixel values?
+
+![](.md/README2.md/2023-07-22-17-37-38.png)
+
+So in particular, the question that you want to answer here is whether the feed forward network that we created and trained in the previous video actually requires a range of numerical pixel values.
+
+So in particular, you saw two videos ago that the model actually sees a range of values from zero to 255.
+
+And then, of course, we normalize this to zero to one.
+
+But still, there were many, many possible values between zero and one.
+
+So in this video, what you want to do is repeat the same model as in the previous video, the same training <sup>제도, 체제, 정권, 상황</sup>, the same meta parameters and so on, the same everything, except now you want to binaries the data.
+
+So now all of the data pixels in the image need to be either zero or one and nothing in between.
+
+No values other than zero or ones only two possible values.
+
+And the question is whether the model is still going to be able to learn with the same level of accuracy as we saw in the previous video.
+
+So somewhere around 95 percent performance, maybe a little higher, maybe a little lower.
+
+But the question is, does the model do considerably worse or considerably better or about the same with binarising the images?
+
+#### Does our ANN need a range of pixel values?
+
+So let me show you one more picture of what this would look like.
+
+![](.md/README2.md/2023-07-22-17-41-19.png)
+
+Here we have the image that you saw a couple of videos ago and here is the same numbers, the same images. But now I've just binaries these images.
+
+So every pixel is either zero or one and that basically just kind of takes away the smoothness and some of the subtle granularity of the images.
+
+So what you should do is make a copy of the notebook from the previous file and do something.
+
+[DUDL_FFN_FFNonMNIST.ipynb](../FFN/DUDL_FFN_FFNonMNIST.ipynb)
+
+I'm not going to tell you exactly how to binaries these images.
+
+That is a choice that you can make and then run through the rest of the model.
+
+Now, you don't need to do a really formal comparison of training the model with these number, the full range versus the binaries range.
+
+It's OK if you just run the binaries data and qualitatively compare the results you get here to the results from the previous video.
+
+So I hope that makes sense.
+
+I hope you enjoy working through this challenge.
+
+Now is the moment to pause the video and switch to Python.
+
+[DUDL_FFN_CodeChallenge_binMNIST.ipynb](../FFN/DUDL_FFN_CodeChallenge_binMNIST.ipynb)
+
+And now I will switch to Python and walk through my solution.
+
+So we import our libraries, import the data here is basically the only thing that I'm changing in this entire notebook.
+
+```python
+# normalize the data to 0 or 1
+dataNorm = (data > 0).astype(float)
+```
+
+So here I write dataNorm.
+
+Now, previously I wrote data.
+
+Norm equals data divided by the maximum value of data, which is the same thing as saying, you know, data divided by two fifty five.
+
+So that's what we had in the previous video.
+
+So here I'm saying data greater than zero.
+
+And now this is going to convert all of the pixels to false or true false where it's exactly equal to
+
+zero and true or it's anything other than zero.
+
+But now I don't want to train on the boolean value, so I convert this results back to a floating point number.
+
+OK, and then we can see the histograms again.
+
+![](.md/README2.md/2023-07-22-17-46-32.png)
+
+Now, the histograms don't really clearly demonstrate that my binary causation was successful.
+
+That's because we still don't really see these values anyway, because there are relatively few of them compared to these values.
+
+So what I decided to do was print out all of the unique values in the original data and the unique values in the normalized data.
+
+![](.md/README2.md/2023-07-22-17-47-19.png)
+
+So you see that in the original data we have pixel intensity values that range from zero up to two fifty five.
+
+But the normalized data only has exactly two values. Zero and one.
+
+![](.md/README2.md/2023-07-22-17-48-07.png)
+
+OK, and then from here everything else is basically the same.
+
+This I didn't change at all.
+
+Literally not a single character.
+
+I didn't change anything.
+
+So here, training the model and plotting the results and I'll pause the video while our positive recording while this is going.
+
+![](.md/README2.md/2023-07-22-17-50-13.png)
+
+So here we see the results and the results are that it's basically the same.
+
+The model does pretty much just as well, including on the training set where it gets it gets close to 100 percent accuracy and on the test set, where it gets somewhere around 95 percent accuracy with this collection of architecture and meta parameter choices.
+
+So I wonder whether you are surprised or not surprised at the results.
+
+The key point here is that sometimes the model can really leverage the full range of data values in a particular data set, and sometimes it doesn't.
+
+The features are so apparent that the model doesn't even care about the relatively subtle features in the data, like any values between zero and one.
