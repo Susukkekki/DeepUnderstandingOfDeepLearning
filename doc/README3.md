@@ -11,6 +11,19 @@
       - [A thought experiement](#a-thought-experiement)
       - [How balanced is balanced enough?](#how-balanced-is-balanced-enough)
       - [CodeChallenge](#codechallenge)
+    - [What to do about unbalanced designs?](#what-to-do-about-unbalanced-designs)
+      - [Which datasets are unbalanced?](#which-datasets-are-unbalanced)
+      - [Strategies for dealing with unbalanced data](#strategies-for-dealing-with-unbalanced-data)
+    - [Data oversampling in MNIST](#data-oversampling-in-mnist)
+      - [Oversampling by exact replications](#oversampling-by-exact-replications)
+      - [About the code example](#about-the-code-example)
+    - [Data noise augmentation](#data-noise-augmentation)
+      - [Noise data augmentation](#noise-data-augmentation)
+      - [About the code example](#about-the-code-example-1)
+      - [Noise augmentation as regularization](#noise-augmentation-as-regularization)
+    - [Data feature augmentation](#data-feature-augmentation)
+      - [Qwerties and distance to the origin](#qwerties-and-distance-to-the-origin)
+      - [Discussion](#discussion)
 
 ## More on data
 
@@ -1421,3 +1434,1273 @@ I hope you enjoyed working through this code challenge, you gained firsthand kno
 They make learning, deep learning quite difficult without making any changes.
 
 So in the next video, I'm going to say a few things about what to do about unbalanced data designs.
+
+### What to do about unbalanced designs?
+
+> - The situations where unbalanced designs occurs and does not occur
+> - Several strategies for dealing with unbalanced designs
+
+The goal of this video is to introduce you to a few strategies that you can apply when you have an unbalanced data design.
+
+#### Which datasets are unbalanced?
+
+![](.md/README3.md/2023-07-23-09-59-29.png)
+
+I want to start by just saying what kinds of data sets are likely to be unbalanced?
+
+And actually, I've already discussed this in the previous video, but things like, you know, fraud detection, this is an example, disease prediction.
+
+If you're trying to predict the presence of a disease, basically, any time you're trying to classify or predict things that don't often happen, then by definition, your data set is likely to be unbalanced.
+
+OK, so what do you do practically?
+
+#### Strategies for dealing with unbalanced data
+
+![](.md/README3.md/2023-07-23-10-07-32.png)
+
+What can you actually do when you have unbalanced data in this slide?
+
+I'm going to present six different strategies for dealing with unbalanced data, although two of them are are really closely related.
+
+So it's kind of like five and a half, let's say.
+
+Anyway, the first strategy this is actually the best strategy is to get more data whenever possible, try to just get more data to balance out your designs.
+
+This is really the best solution.
+
+Obviously, this is not always possible.
+
+You know, it's very easy just for me to write this on the computer, and it's very easy for me to tell you to get more data.
+
+But it's easier said than done.
+
+But it's not always impossible.
+
+Even if you are working with rare clinical data, you know, it might be possible to search around on the Web for other data sets that you can incorporate.
+
+Or if this is research data, you can try contacting other researchers or colleagues to see if they can share some of their data to increase your sample size.
+
+So this is the best solution.
+
+It's not always possible.
+
+So another solution is called under sampling.
+
+Under sampling means to throw out a lot of your data from the categories that have too much data in order to match the sample sizes.
+
+Now, the thing is that, you know, this will work.
+
+You can throw out data from other categories to make all of the categories have a matched number of data samples.
+
+But the problem is, you know, it's a bit of a pity to throw out perfectly good data just because one of your categories has relatively few samples.
+
+And reducing data also means that the models are going to be harder to train.
+
+It risks that the model will have poor generalization performance.
+
+Now, if you have already a ton of data, if you have tens of thousands or hundreds of thousands of data observations, then under sampling might not be such a bad idea.
+
+But in general, this is this is a possibility to keep in mind there's nothing really wrong with this approach.
+
+But it's just, you know, I'm an empirical scientist, so I.
+
+I would hate to throw out perfectly good data.
+
+OK, so that's under sampling.
+
+The next option is over sampling.
+
+here The idea is you create multiple copies of the rare data or of the data in the category that doesn't have a lot of data in it.
+
+So you take the data that you only have a small number of examples of and you literally just copy it multiple times to increase the sample size.
+
+Now, on the one hand, this is really easy to do.
+
+It's very easy to implement.
+
+But on the other hand, you're not actually creating any new information.
+
+You're not actually making more giving the model more information to work with and to learn from.
+
+You're just increasing the number of the same copies of the same data.
+
+So the danger with oversampling is that it increases the risk of overfitting.
+
+That means you're increasing the chance that the model is simply memorizing the training data without being able to generalize to new data.
+
+Nonetheless, oversampling is is a is an OK strategy.
+
+So here we have another strategy which is related to oversampling, but this is data augmentation.
+
+So here the idea is that you take your actual data, but instead of repeating exact copies of the data, you change the data.
+
+Somehow you can add some I don't know, I wrote nonlinear.
+
+They can also be linear transformations, but you just change the data somehow to add new features or change the features.
+
+In such a way. It has to be done carefully because you don't want to push the data into a new category.
+
+So the features that you augment need to be still close enough to the original data that they are still categorized in the same way.
+
+Now, data augmentation is quite feasible.
+
+When you were working with images, it's not always so easily done if you're working with other data like tabular data or financial records or things like that.
+
+When we start talking about CNN and image Processing, you will learn more about data augmentation techniques.
+
+So this was strategy one, two, three, four.
+
+Here we get I don't know if this is strategy five or maybe this is like strategy for a these two are really closely related to each other.
+
+So the idea here is to create what are called synthetic samples, which is basically generating new data.
+
+So you're making up new data, kind of like what we have done before when we have generated our own data.
+
+But the idea of synthetic samples is that you're creating fake data that specifically looks a lot like the real data.
+
+In fact, you can actually do this in some cases by just taking random samples of your data from the rare category and averaging them together.
+
+It's not always quite as simple as averaging.
+
+It depends a lot on the nature of the data and the type of data and so on.
+
+There is a method called SMOTE, which stands for a synthetic minority over sampling technique.
+
+I guess the final E comes from this E or something, or maybe they've meant to give it another name.
+
+But anyway, SMOTE is basically a technique to average multiple data samples together.
+
+Except you're not taking an arithmetic average, you're taking a geometric average in the feature space.
+
+So if you're you know, if you can look up, it's fairly straightforward to implement a procedure like this.
+
+OK, and then finally, so these are all strategies you would use for for still using data with a deep learning model.
+
+A final strategy is to consider maybe I should have even called this strategy zero is to consider whether a non deep learning solution would be better.
+
+Now, the thing is, everywhere in statistics, everywhere in machine learning, having unbalanced designs is suboptimal.
+
+But there are some statistical methods where an unbalanced design is not so bad.
+
+And in deep learning, having an unbalanced design, it can be very dangerous, as you saw in the previous video.
+
+So you can think about something like clustering methods or a linear regression.
+
+These are method or an ANOVA.
+
+These are methods that are a little bit more robust to unbalance data designs.
+
+So here you go.
+
+These are several different strategies for dealing with unbalanced data.
+
+Unfortunately, none of these methods is perfect.
+
+None of these methods is really great.
+
+So whenever possible, you should try to start with unbalanced data design so you don't even have to worry about this stuff.
+
+### Data oversampling in MNIST
+
+> - One way to implement oversampling
+> - That oversampling can lead to suspiciously<sup>수상쩍게, 의심스럽게</sup> good performance.
+
+In the previous video, I told you that one strategy for dealing with an unbalanced design is a procedure called oversampling, which basically means that you repeat samples, you repeat data observations from the category that doesn't have enough data samples already in it.
+
+In this video, we are going to explore the effects of data oversampling on categorisation performance in the MNIST data set.
+
+Now, this is not exactly the same as what we were discussing in the previous video because we are not creating an unbalanced design, the MNIST data that is not already unbalanced.
+
+So we're oversampling from the entire distribution, but still it will show you how to oversample and it will allow us to explore the impact of oversampling.
+
+OK, so let me begin by having a brief discussion about what oversampling means and and how it works.
+
+#### Oversampling by exact replications
+
+![](.md/README3.md/2023-07-23-10-13-39.png)
+
+So let's imagine we have a very small data set within N equals four.
+
+So this is the data set and now we are going to oversample simply by repeating these four images.
+
+So now our new data set looks like this.
+
+Now, here's a question.
+
+What is the what's the real sample size here?
+
+You know, in in a literal sense, the sample size is now eight.
+
+Obviously, we have, you know, eight items in this data set.
+
+But there is another sense in which the sample size is kind of still four.
+
+Right, because we only have four unique data samples in here.
+
+And then these additional samples are exact replications.
+
+They do not actually provide any new information that the model can leverage.
+
+So is there really a difference between training on this data set versus training on this data set with twice the number of training epochs?
+
+It's an interesting question and we are going to come back to that discussion later on.
+
+#### About the code example
+
+![](.md/README3.md/2023-07-23-10-15-24.png)
+
+So here's what we are going to do in the code example.
+
+We're going to train on the MNIST data set using relatively small sample sizes varying between 500 and 4000.
+
+So this is up to about a quarter of our data sample, which is, you know, less than a tenth of the total sample size of the MNIST the full MNIST data set.
+
+And then we are going to train all the models twice, once using unique samples and once with a doubling of the samples, just like I showed in the previous slide.
+
+And, well, this is nothing new about this video.
+
+Obviously, we always think super critically about the results.
+
+But yeah, we're going to have a discussion about how to interpret the results from doubling from oversampling the data and what they mean and how we could possibly evaluate them.
+
+[DUDL_data_oversampling.ipynb](../data/DUDL_data_oversampling.ipynb)
+
+So import all of our favorite libraries here and now this cell here, 
+
+![](.md/README3.md/2023-07-23-10-16-04.png)
+
+this code cell is a little bit different from how I normally set up importing the MNIST data set.
+
+This part is the same, although I'm calling this data full.
+
+Actually, technically, this isn't really the full data set because Google CoLab only provides us with a small version.
+
+But anyway, this is the full of the small version that we have now.
+
+Here I create this python function that will create a data set.
+
+![](.md/README3.md/2023-07-23-10-16-40.png)
+
+Now, when you look through this code, most of it should look pretty familiar.
+
+We are extracting the labels and normalizing the data, converting to PyTorch Tensor, using Scikit learn to partition the data and then creating train and test lotas which are exported out of this function.
+
+So overall, it's pretty similar to what you've seen before, but there's a couple of things that are new that you need to know about.
+
+![](.md/README3.md/2023-07-23-10-17-29.png)
+
+So one is that I'm not taking all of the data samples here.
+
+I'm only taking the first N samples where N is an input into this function.
+
+So that is one new piece of this puzzle.
+
+And then you can see there's also a second input here called double the data.
+
+This is a boolean.
+
+The default value is false.
+
+So if you don't provide a second input when calling this python function, the value of double the data will be set to false.
+
+If this is set to true, if we call this function and set the second input to true, then we are going to run this code here, which is to double the data.
+
+![](.md/README3.md/2023-07-23-10-18-13.png)
+
+Here you can see I'm replacing the data and of course, the labels with a concatenated version of themselves.
+
+So concatenate data norm with data norm.
+
+It's literally just a doubling of the data, an exact doubling repetition.
+
+OK, and then the rest of this stuff is all the same.
+
+Here you can see I have a little bit of code that commented out.
+
+![](.md/README3.md/2023-07-23-10-19-01.png)
+
+Now, this initially looks very similar to what we have up here.
+
+Here we are creating an exact copy of all of the data.
+
+So the data here get doubled before the split into train and test.
+
+And here with this code, you know, if you would uncommented this code, the training data and the training labels get doubled, but the test data do not get doubled.
+
+So let's leave this comment for now.
+
+I'm going to get back to this issue in in a few moments.
+
+This is going to be important for later on in the video.
+
+OK, so this is new code that we haven't seen before.
+
+So whenever you have new code, it's always important to do some sanity checks to test the code and make sure that it works the way you expect it to.
+
+And that's what we do here.
+
+![](.md/README3.md/2023-07-23-10-19-39.png)
+
+So here I'm creating a small data set with only two hundred samples.
+
+This would not be very useful for training, but we don't we're not actually doing any training here.
+
+I'm just creating these data loaders and then checking the sizes of the this is for the the train data and the test data with the second input being false, which means do not double the data and true.
+
+Which means to double the data.
+
+OK, so run this out and you can see these numbers.
+
+![](.md/README3.md/2023-07-23-10-20-07.png)
+
+Here are this of course, seven hundred and eighty four corresponding to the number of pixels in the image here we have one hundred and eighty and twenty.
+
+Now those two numbers add up to two hundred and one hundred and eighty corresponds to ninety percent of the data and that is the partition into training and and testing that I have specified over here.
+
+So the train size is zero point nine.
+
+OK, so and then here for the second part of this code here now we see that it's three hundred and sixty and forty.
+
+So it's literally an exact doubling of the sample size here.
+
+So we input two hundred, but then we we select for the first two hundred MNIST images and then we double them and that doubles the sample size.
+
+OK, very good.
+
+So now I'm convinced that this code cell up here works, this python function works.
+
+So now we're going to create and train the deep learning model.
+
+This is all the same that you have seen before.
+
+I didn't change the model architecture.
+
+Also, the the function to train the model hasn't changed.
+
+I set the epochs the number of training at bux down to fifty because in fact we don't want to have full training here.
+
+I want there to be a little bit of room for variability so we can see whether doubling the sample size actually has an effect.
+
+So let's see.
+
+The rest of this is all old news.
+
+So run this cell and yeah.
+
+So here we're going to run the model once to confirm that it works again.
+
+This is, you know, just sort of basic sanity checking before we get to the experiment.
+
+So I'm making still a relatively small data.
+
+![](.md/README3.md/2023-07-23-10-22-02.png)
+
+So data set using five thousand in.
+
+This is about a quarter of the sample size that we have now.
+
+We don't really expect this model to do extremely well because the sample size is pretty small, but
+
+we do expect it to do reasonably well.
+
+And here we see the training.
+
+![](.md/README3.md/2023-07-23-10-22-15.png)
+
+Accuracy gets up to around 90 percent, a bit over 90 percent.
+
+That's I think that's pretty reasonable considering the architecture we have and the fact that we have relatively a relatively small data sample and now we come to the experiment.
+
+So here is the experiment.
+
+We are going to test a range of sample sizes from 500 up to 4000 in steps of 500 here.
+
+Initialize the results matrices.
+
+You can see those two, I call them single and double corresponding to one repeat and are no repeats, I guess, and a doubling.
+
+So one repeat of the data set.
+
+The first dimension corresponds to the different sample sizes and the three in the second dimension is going to be used for storing the loss, the training, accuracy and the test accuracy.
+
+OK, so then we have our for loop that actually runs the experiment.
+
+This is pretty straightforward.
+
+We're creating a data set with this size specified by sample sizes and here I'm setting it to false,
+
+which means we are not doubling the data, train the model and extract the model performance.
+
+![](.md/README3.md/2023-07-23-10-23-33.png)
+
+The this five lines of code here is exactly the same as above, except this is set to true instead of false.
+
+So here we actually are doubling the data.
+
+All right.
+
+So I'll run this.
+
+This takes a couple of minutes.
+
+I'm sure you are super duper curious to see what the results look like, so without further ado, let's run this code, which simply plots all of the results now before discussing the results.
+
+![](.md/README3.md/2023-07-23-10-23-57.png)
+
+Let me first make sure that the plots are not misinterpreted because normally we have plots that look like this accuracy and they go up over the x axis and normally the X axis is corresponding to the training epochs.
+
+So then we say the model is improving.
+
+It's getting better with more training.
+
+That's not what we see in this case here.
+
+Every data point actually corresponds to the average of the last five epochs from a different run.
+
+And what we see here on the x axis is the the sample size, the number of unique samples that were in the data.
+
+So when you see this going up, this basically means that the model is learning better when we when we increase our sample size.
+
+OK, so that said, we see that the model, the original model, which means just the unique values of the unique data values, it does pretty poorly with the small data size and it gets better and better with larger and larger data sets.
+
+Of course, this is going to continue to grow somewhat as we would add more and more data.
+
+Now, when we double the sample size, this the accuracy is way, way higher. 
+
+It's way higher at small sample sizes.
+
+And as we increase the sample size, it's really get you know, this looks like it's nearly 100 percent accuracy.
+
+Now, of course, this could be due to overfitting.
+
+It's possible that because we have presented the model with the same samples twice, the model is simply memorizing the data samples.
+
+So therefore, we have a look at the devset now.
+
+It still looks very impressive, almost too good to be true.
+
+Right, with only four thousand samples.
+
+And we we have a doubling of the of the data that we get to almost 100 percent accuracy.
+
+This looks like it's around, you know, ninety eight.
+
+Ninety nine percent accuracy.
+
+This should feel suspicious.
+
+You know, you should always think critically about your results, whether they are really correct.
+
+You know, when we were training with the full twenty thousand samples, we still didn't get up to, you know, we didn't get above like 96 percent accuracy.
+
+So there's something that feels a little bit fishy about this.
+
+And I would like you to think about this, maybe pause the video, if you would like, and think about what could what could be the problem here.
+
+OK, did you come up with it?
+
+Did you figure out what is the issue here?
+
+So the problem is that the way that we split the data or sorry, the way that we doubled the data before splitting it into train and test means that we have some exact replicas of the samples in the training set and in the devset or the test set.
+
+In other words, there are going to be some data samples where there are there's, you know, let's call them the two twin brothers.
+
+And one twin is in the training set and the other twin is in the devset.
+
+So to the extent that the model was simply memorizing individual data samples, the model could also leverage that in the deficit.
+
+So this is actually not a really great test set not that I'm being too nice there.
+
+This is actually an invalid devset.
+
+That's the truth.
+
+This is not valid because we have included training examples in the devset.
+
+So therefore, this orange line simply cannot be trusted.
+
+The blue line can be trusted.
+
+So, you know, this kind of interesting in its own right that we see that adding more samples improves accuracy.
+
+But the orange line is a bit mixed.
+
+So it seems like the doubling the the samples is giving us better performance.
+
+But we cannot really evaluate that here confidently because of this problem of mixing with these two data samples.
+
+OK, so there actually is a way that we can resolve this.
+
+There's two ways that we can resolve it.
+
+One is by using a true independent test set, and that's one of the questions in the additional exploration here.
+
+Another possibility is to partition the data before we actually double the sample size for the training set.
+
+And that is what I do all the way back here.
+
+That was the code that I commented out.
+
+So I think now you can see the importance of this code.
+
+So what I'm going to do is comment about this.
+
+So now we are not going to double all of the data set.
+
+Instead, we are only going to double the training data.
+
+![](.md/README3.md/2023-07-23-10-28-43.png)
+
+So now the test data are still going to remain purely original samples.
+
+There's not going to be any repetitions in the training set and in the test set.
+
+So now I'm going to rerun this.
+
+Code, it'll take several minutes and we will have another look at that.
+
+Actually, let me go down.
+
+So it's fresh, uh, before we do.
+
+Yeah.
+
+So, again, we saw that the when we double the samples, we get much better performance, get starting at like 85 percent and or 82 percent and going up to nearly 100 percent.
+
+OK, let's see how it's going to look when I rerun it.
+
+![](.md/README3.md/2023-07-23-10-29-22.png)
+
+All right, so now things have changed quite a bit, actually, not that the train set right.
+
+The accuracy here looks basically the same as it did in the previous room, certainly qualitatively the same.
+
+Now, the devset performance gives a totally different picture.
+
+Now it seems like doubling the data set.
+
+So having an exact repetition of the data set doesn't really affect the training performance for larger sample sizes.
+
+It does look like it has an effect for small sample sizes.
+
+And this is pretty interesting.
+
+Apropos the discussion in the previous video about using oversampling as a strategy for dealing with categories that have too small of a sample.
+
+So not enough data.
+
+Now, this is just one run.
+
+So, you know, we would want to repeat this experiment multiple times.
+
+And we also examined this on a true test set, which I as I mentioned, I that's the goal here.
+
+But it does seem like doubling the data is going to improve performance for small sample sizes and not really for larger sample sizes.
+
+I hope you found this illustration enlightening and interesting, and I think one of the take home messages here was that when the results looks suspiciously good, when it seems like the model is doing better than you think it probably should, then you should definitely be suspicious and think carefully and go back and look at the code.
+
+### Data noise augmentation
+
+> - How to oversample without being exactly redundant
+> - That noise augmentation can improve performance
+> - Why noise augmentation can also help prevent overfitting ('data regularization')
+
+This video is a little bit similar to the previous video in that we are going to continue exploring the implications of oversampling data for training and test performance, but it's a little bit different here.
+
+We are going to not just exactly copy the images, but instead create noise, augmented versions.
+
+So the copied images are not going to be exact replicas.
+
+I'll show you what that looks like in a moment.
+
+You will see that noise Augmentation helps to minimize overfitting.
+
+So this is a form of data regularization.
+
+#### Noise data augmentation
+
+![](.md/README3.md/2023-07-23-10-33-58.png)
+
+So I think when you look at this picture, I think you can figure out which are the original images and which are the noisy images.
+
+Pretty obvious.
+
+So what we are going to do is not just make a copy of the data, but make a noisy copy of the data.
+
+So all of the images with noise here are copies, but they are not exactly identical.
+
+So the pixel, you know, the numerical values that each pixel are going to differ from the images from which they are copied.
+
+Now, it's still debatable whether this is really a new sample, whether this is really different from the original noiseless two.
+
+I think the answer is it's somewhere in between.
+
+It's it's not a totally independent sample, but it's also not exactly identical.
+
+#### About the code example
+
+![](.md/README3.md/2023-07-23-10-35-08.png)
+
+So what are we going to do in the code file here?
+
+Well, it's it's similar to the previous video.
+
+We are still going to double the sample size, but the double samples are going to have white noise added with the range of zero to point five.
+
+So that's half of the normalized image range.
+
+And in this video, we're also going to have a separate test set.
+
+
+So we will have the the training set and the devset and then we'll have a test set that is really independent,
+
+that doesn't use any any possibility of doubling the images, which we thought was a problem in the previous video.
+
+All right.
+
+So let's switch to Python and see what we can learn about deep learning.
+
+[DUDL_data_noiseAugmentation.ipynb](../data/DUDL_data_noiseAugmentation.ipynb)
+
+This function here is pretty similar to the function in the previous video, except when we make a copy of the data, we're not just copying the data Exactly.
+
+![](.md/README3.md/2023-07-23-10-36-27.png)
+
+Instead, we are concatenating the data plus data N
+
+this data N is a noisy version of the data.
+
+So you can see what I'm doing here.
+
+If this toggle is set to true, then I create a new data matrix dataN I set that equal to data plus some random numbers.
+
+Now this function here is going to give me random numbers drawn from me, not a uniform distribution between zero and one.
+
+And so then I divide by two.
+
+So that gives a resulting data set that has numerical values between zero and point five.
+
+So this part gives so the noise a scale between zero and point five.
+
+And then I add it to the data.
+
+Now there's actually one crucial line of code that's that's missing in here, which is that these data are normalized to range of zero to one.
+
+But when we add random numbers between zero and point five, two numbers between zero and one, it is possible that some of these pixels will have a values larger than one.
+
+So, in fact, the way I've written the code here, the data, the ultimate data that we're going to be training on can have values that exceed our range of zero to one.
+
+So it would actually be a good idea for you.
+
+I'm not going to do this.
+
+I would like you to do this to add a line of code here where you re normalize the data so you make sure that the data have a real range of zero to one.
+
+OK, but then anyway, we can see that I'm you know, in the previous video we were concatenating like this data and data.
+
+Now it's data and dataN
+
+so as I mentioned in the slides a moment ago, we are concatenating with something that is similar.
+
+It's very similar to the data, but is not exactly identical.
+
+So these are not identical copies.
+
+OK, otherwise, let's see, the rest of this is the same.
+
+I'm actually not going to discuss this in detail in this video because we spent quite some time in the previous video on this.
+
+But I do encourage you after the video to go through this and basically uncommented this code and comment this code to see what effect that has on the performance.
+
+And then there's another new thing here, which is that I'm creating a test set and now this test that is truly unique.
+
+![](.md/README3.md/2023-07-23-10-39-16.png)
+
+These are images that are not included in the training set and not including in the devset that you can see how I define them here.
+
+It's from data full.
+
+And then, you know, up here we get images from data file from the beginning up to sample.
+
+And here we have from sample N to the end.
+
+So, in fact, this is the test set is going to be much larger than the training set.
+
+And it's basically all of the the rest of the images that are not used for training and dev set.
+
+Now, in this case, I decided not to convert these into a data loader here, the test images into a data loader because we don't actually need them.
+
+We just need the data and the labels to be in PyTorch tensor format.
+
+So I'm just outputting here.
+
+This is also new, this third output from this python function.
+
+I'm just outputting a tuple that contains the test data and the test labels.
+
+Again, we don't need them as data loaders.
+
+OK, so run that code.
+
+And here I'm just visualizing some of the images.
+
+This is basically just selecting a couple of images, more or less at random and creating a grid.
+
+![](.md/README3.md/2023-07-23-10-40-42.png)
+
+This is what I showed in the slides a moment ago.
+
+Now, from here, a lot of this code is the same.
+
+Setting up the model is the same.
+
+The function that trains the model is the same.
+
+Again, I'm using only 50 epochs here because I want to undertrained a little bit so that we can see the effect of oversampling.
+
+OK, and then here is the experiment.
+
+So now this code is also nearly identical to the code from the previous video, actually, just some very minor housekeeping changes, like we need to have a third output from this function, make the data set, but otherwise this is the same.
+
+OK, so I'll run this and then I'll come back to the video and we will get to see what the results look like.
+
+All right, let's have a look.
+
+Let's see what these results look like.
+
+![](.md/README3.md/2023-07-23-10-41-42.png)
+
+So this is exactly the same figure organization as the figure in the previous video.
+
+So the X axis here is not the training, but it is the sample size, the number of unique samples in the data.
+
+So we look at train, this looks basically the same as what we saw in the previous video.
+
+So when we double the sample size by augmenting, of course, in this case, it's noisy augmentation,
+
+but still we get to nearly 100 percent performance accuracy, even with relatively small sample sizes.
+
+And now here, when we look at the devset, this is starting to look pretty interesting because this kind of looks like it's somewhere in between the two devset performance functions that we saw in the previous video.
+
+So you'll remember in the previous video, the first time we ran the code, we were mixing data samples in the train and in the devset.
+
+And then, you know, we got to basically 100 percent accuracy.
+
+Even with relatively small sample sizes, and then when we when we excluded all of the images from the redundant images from the devset, then the accuracy matched the original.
+
+So the data set without any repetitions for larger sample sizes and for small sample sizes.
+
+It looked like we still had some benefit.
+
+So here in this case, it looks like we have kind of like the average of those two functions, right.
+
+So it's higher than the devset.
+
+The accuracy is higher than the deficit for the unique value data sets, but it's not quite up to 100 percent accuracy.
+
+I encourage you after this video, I encourage you to go back to the function that creates the data sets and swap the commented and uncommented lines, as we discussed before.
+
+But we also have another way built into this code file to really evaluate the benefit of augmenting the data.
+
+And that's by taking advantage of the separate test set that we are now creating.
+
+Now, I hope that you explored this on your own in the previous video, but if you didn't, now you have the code so you can actually go back to the previous video and solve some of the additional explorations.
+
+OK, so the thing is that the the most recent models that we ran were for four thousand samples.
+
+So I want to see whether we really have a benefit of augmenting the data for a small sample size. So 500.
+
+![](.md/README3.md/2023-07-23-10-44-29.png)
+
+So I'm going to rerun these models with a sample size of 500.
+
+So I need to recreate the data and then I need to train two new models.
+
+And I'm calling these models netO and netA for the original and augmented.
+
+And the reason why I'm giving these unique names is that I do not want these to be overwritten because here we are going to test them.
+
+So here we have our test data set that comes from from here.
+
+So the test data set and then we just extract the data value.
+
+So the images and the labels and now we can run the test data through these two different models and then compute the accuracy.
+
+And then here I'm printing out the results.
+
+![](.md/README3.md/2023-07-23-10-45-36.png)
+
+So here we see the original data.
+
+Without any oversampling, we get train performance of forty two percent.
+
+That's pretty crappy def set performance.
+
+I'm actually it's basically 40 percent all the way through.
+
+And then when we have the Augmentin model we have the training performance is 92 percent.
+
+That is hugely that's a huge difference here.
+
+But of course we know that there is some overfitting that's going on here.
+
+And the devset we also discovered in the previous video that part of this increase in accuracy relative to this is overfitting.
+
+And so the question is, is this entirely due to overfitting the increased performance or is it, you know, part of this overfitting and part of this a genuine increase in performance?
+
+And that answer comes from the the independent test set, which we see here.
+
+And the fact that this is 80 percent accuracy compared to 40 percent accuracy here tells us that although there is a little bit of overfitting here in the dev set because of the redundant or partially redundant samples, there is actually really a benefit.
+
+We actually did genuinely benefit from adding augmented data to the training set.
+
+#### Noise augmentation as regularization
+
+![](.md/README3.md/2023-07-23-10-49-18.png)
+
+So as a recap, we see that the model also has to learn how to deal with these noisy samples, which means that although the noisy repetitions are highly correlated with their noiseless, original images, they do add some unique value.
+
+So we really are getting more information and better training from the model that helps with the generalization because it prevents the model from being able to memorize specific examples, because the repetition, the repeated images are actually a little bit unique.
+
+They are not identical.
+
+So here's a thought question I added.
+
+Uniformly distributed noise.
+
+Could we have also added Gaussian noise instead of uniformly distributed noise?
+
+So that's a question for you to think about.
+
+And, well, I'm not going to tell you the answer.
+
+I would like you to think about that.
+
+And finally, the last thing I want to mention is that in practice, when you're doing a categorization of images and you want to add noisy copies usually so you can do it yourself, the way I showed you in this video, usually in PyTorch, she would do this with a transform of a torch transform function.
+
+So I'm going to tell you more about that when we get to the CNN section, but just a little bit of head's up about that.
+
+OK, so I hope you enjoyed this video and the previous video we saw that oversampling in particular, if you can add a little bit of noise, really can benefit deep learning, model training, but it's really only beneficial for relatively small samples when you get to larger sample size, the benefit of of oversampling decreases.
+
+### Data feature augmentation
+
+> - Learn how to augment data by creating new features as combinations of existing features
+> - Learn how to perform a t-test on experimental data to test for significant differences in performance
+
+Let's continue our exploration of data augmentation in this video.
+
+We are going to do feature augmentation, so we're actually going to create entirely new features in a data set that don't yet exist.
+
+And these new features will be defined as combinations of existing features.
+
+And we're actually going to use non-linear combinations.
+
+So it's not simply repeating what's already in there.
+
+So what we are going to do in this video is to compare performance between two data sets.
+
+We're going to use the quwerties data set, so a two dimensional qwerties data set.
+
+And then we're going to create a three dimensional qwerties data set where the third dimension is defined as a new feature.
+
+I'll talk about that in a moment.
+
+And then we're going to repeat that test multiple times.
+
+We'll do it 10 times for each of the data sets, the two dimensional data set and the three dimensional data set.
+
+And then we are going to perform a t-test on the experimental results.
+
+And that will give us some insight into whether data feature augmentation, whether adding this new feature is actually giving us a significant a statistically significant benefit in performance.
+
+So quite interesting.
+
+We have quite a few things to cover in this video.
+
+#### Qwerties and distance to the origin
+
+![](.md/README3.md/2023-07-23-10-55-52.png)
+
+Here's a reminder of the qwerties data set.
+
+This is the three Category qwerties data set shown here, exploding in brilliant, colorful fireworks from the origin.
+
+Here you can see what I've done.
+
+I've drawn a line from each individual data point to the origin of this graph.
+
+And it's pretty interesting when we look at the data this way, when we draw these lines on top, then we see that actually the distance to the origin is different between the categories, certainly between the blue squares and these other two categories.
+
+So that leads us to an interesting question that.
+
+Well, right.
+
+So qwerties natively have only two dimensions the X coordinate and the Y coordinate.
+
+So we are going to create this new feature in the data and that is defined as the distance to the origin.
+
+So that leads to our question.
+
+Does this actually does adding this extra feature actually help the model discriminate the three different categories?
+
+So now we're going to switch to Python.
+
+We are going to create these data natively in two dimensions.
+
+We will add a third dimension of information, the distance to the origin, and then we'll test for discrimination performance in the 2D and the 3D data sets.
+
+[DUDL_data_featureAugmentation.ipynb](../data/DUDL_data_featureAugmentation.ipynb)
+
+So the way that we create these data initially is the same as what you've seen before, that's all of this code.
+
+So we create the three different categories here.
+
+I'm plotting them and also plotting lines to the origin.
+
+So this is not actually computing the distance yet.
+
+We haven't yet computed distance.
+
+Instead, I'm just drawing the lines on top of the qwerties.
+
+![](.md/README3.md/2023-07-23-10-57-30.png)
+
+OK, and here is where I actually compute the Euclidean distance to the origin.
+
+So this line of code, if you would translate this into a formula, into an equation in your head, this should look familiar from high school.
+
+So we have the X coordinate value squared plus the Y coordinate value squared, and then we take the square root of that.
+
+That is the definition of Euclidean distance.
+
+And then here I'm going to make a scatterplot of all of the distances.
+
+![](.md/README3.md/2023-07-23-10-58-15.png)
+
+So this is for the blue, qwerties the black and the red qwerties.
+
+So you see that the blue qwerties are definitely closer to the origin, not every single one, but as a population, they are closer to the origin compared to the black and the Reds qwerties.
+
+And these guys look like they are roughly equidistant to the origin.
+
+So the question is, does adding this information to the dataset help the model discriminate?
+
+OK.
+
+And that's what we do here.
+
+I say dataAug for Augmentin equals the concatenation of data and this vector dist2orig.
+
+Now this looks maybe a little bit confusing here to say that view.
+
+This is essentially reshaping.
+
+We need to reshape this vector from just an ordered list of numbers into a column vector.
+
+And that's what this does.
+
+This gives us a column vector.
+
+You can see I'm using two dimensions here.
+
+And the second dimension has length one.
+
+So this makes a column vector and then we are concatenating them.
+
+And here we can see the sizes.
+
+![](.md/README3.md/2023-07-23-11-00-09.png)
+
+So we see the original data are nine hundred by two, so two X and Y and then the new data are nine hundred by three.
+
+And then this is just the you can see part of the data set here.
+
+So the X coordinates, the Y coordinates and the distance to the origin, then we partition the data and convert it into data loaders.
+
+This is also pretty standard stuff at this point.
+
+So here we are creating the model now.
+
+We do need to adjust the model dynamically according to the number of features that we are using in the data.
+
+So you can see we have an input.
+
+![](.md/README3.md/2023-07-23-11-00-48.png)
+
+So this is the python function that creates the model and there's an input in here that says so that's a boolean input.
+
+It says use extra feature.
+
+The default value is false.
+
+Now, if that is true, then the input layer actually needs to be three, right?
+
+Because then there's going to be three inputs into the model else.
+
+So if this is false, then the input layer has only two elements corresponding to X and Y.
+
+So we do need to be a little bit dynamic with our programming here for setting up the model.
+
+Of course, once you get pass the input layer, the rest is the same, the hidden layer is the same.
+
+The output layer is always going to be three corresponding to the three categories, regardless of how many inputs we have.
+
+OK, now here in the forward pass, we also need to modify the code to be flexible according to whether we are using this extra data feature or not.
+
+![](.md/README3.md/2023-07-23-11-01-55.png)
+
+In particular, what I do here is take the input data.
+
+So these are the data that gets passed through the model and then I say, if not, use extra features.
+
+So if we're not using the third dimension, then I reduce the data by clipping off the final dimension.
+
+So this is giving me all rows and only the first two columns of the data matrix.
+
+Now, this is something that I don't think I've shown you so far in the course, but we're going to start using it more often as we progress in the course, particularly once we get to convolution.
+
+This kind of stuff becomes really important and really insightful.
+
+So notice I'm printing out the size of the input data inside this method when we do the forward pass.
+
+Now, if you're actually doing this during training, it's a little bit annoying because, you know, Python is just going to print out tons and tons and tons of numbers.
+
+So this is something that we are going to comment out when we actually start training the model.
+
+But this is pretty insightful when you are setting up and testing the model and evaluating the model, making sure that everything is internally consistent.
+
+So let me make this a little bit more clear by running this cell and then we get to that.
+
+![](.md/README3.md/2023-07-23-11-03-27.png)
+
+So now I'm going to create a model with the input being true, which means we use all three features.
+
+And you can see this is quite compact code here, but we don't I'm not actually training the models,
+
+so I don't really care about training the model.
+
+All I want to do is push some data through the model, which I do here, and that is going to run the forward pass and that's basically going to print out this information here.
+
+So let's run this cell here so you can see we create the model.
+
+And now I'm not actually printing out any output.
+
+![](.md/README3.md/2023-07-23-11-04-04.png)
+
+These outputs here, this information here and this information here, this is what the model is printing out because of those print functions that are included in the forward pass.
+
+So you can imagine, you know, for running a forward pass through, you know, dozens of batches and, you know, hundreds of training epochs.
+
+And this pair of lines would actually be printing out thousands and thousands of times as the training progresses.
+
+But so so we're going to I'm going to comment those lines out in a moment.
+
+OK, but I wanted you to see that when we are using the augmented feature, the size of the data is 16 by three and then it's still 16 by three.
+
+Here, 16 corresponds to the mini batch size and three is the features.
+
+And here, when I say false meaning, we are not using the augmented feature, then the data are initially three dimensional, but I reduce them to two dimensional.
+
+So that is just to remind you.
+
+So now I'm printing out the size of the data before and after this line of code here.
+
+OK, very nice.
+
+So now I'm going to run the cell again and now we're not going to see anything print out here because I commented out those lines.
+
+All right, then we have a python function to train the model and there's nothing particularly new here.
+
+This is copied and pasted from previous runs of categorizing the qwerties data.
+
+What is kind of new here is a function that ploat all of the results.
+
+This is we've seen things like this before.
+
+We have a python function that that creates a figure that visualizes the results.
+
+This is pretty useful if you are going to be calling something like this and doing a lot of involved, plotting to see how many lines of code this is.
+
+So if you're going to be reusing code like this, then, of course, it's a good idea to put it into a python function.
+
+OK, so I'm going to run that.
+
+I'm not really going to go through all of this code line by line.
+
+But of course, if you are curious to see how I accomplish some of the plotting routines, then I encourage you to look through this code more carefully.
+
+OK, so we're going to run the experiment in a moment.
+
+But first, I want to test that the model works by running it once with each parameter setting.
+
+So we're going to run through the entire model, create a model and train it without any augmented features and then with augmented features.
+
+So you can see I'm going to do that.
+
+So train the model here.
+
+And then here I report the final accuracy and then I call this function, plot the results.
+
+So the final accuracy was 85 percent.
+
+![](.md/README3.md/2023-07-23-11-06-48.png)
+
+Not so bad.
+
+Looks pretty fine.
+
+Nothing particularly striking, actually.
+
+It does look like, you know, when you look at the lost function here, it looks like the loss hasn't completely asymptote it.
+
+So I think, you know, in principle, we probably could train a little bit more, a little bit longer
+
+and maybe get better performance out of this.
+
+Looks like this is still increasing a bit.
+
+Then we have to test everything again with using the extra data feature.
+
+By the way, here you can see him also plotting accuracy as a function of the different groups.
+
+![](.md/README3.md/2023-07-23-11-07-24.png)
+
+So it looks like we get slightly higher categorization accuracy for Group zero, which is the blue squares over here in this diagram compared to the other groups, which are slightly worse.
+
+And then you also see represented here, the blue cloud is a little bit  further away from the green and the black cloud.
+
+These are different colors than I used previously, but I think you get the idea so you can see there's a lot more Xs here.
+
+So the model had an easier time distinguishing these guys and these guys were harder to disentangle from each other.
+
+OK, so here again, we see decent performance, probably could get a bit better if we would train a little bit longer or maybe use a slightly more complicated model.
+
+![](.md/README3.md/2023-07-23-11-08-53.png)
+
+Now, from just eyeballing this plot and this plot, it's not really clear whether one of these is better than the other.
+
+In other words, it's not so visually obvious whether including that extra feature in the data set is really helping the model learn.
+
+So whenever you are uncertain about whether if a parameter or a change in the the model or the data is really useful, then one thing you can do is, is run a statistical experiment.
+
+So this is not so different from the kinds of experiments we've been doing previously, but here we are going to run a statistical test so you can see what we're doing here, loop over 10 runs.
+
+![](.md/README3.md/2023-07-23-11-09-54.png)
+
+So we're going to repeat this experiment 10 times.
+
+And here I call the python function that creates a new model instance and trains that model with and without the extra data feature.
+
+Now, this is pretty compact here.
+
+And this notation here, this code is pretty compact compared to how I've called this previously.
+
+And then we have some extra indexing here at the end.
+
+So the one here actually let me scroll back up because I want to make sure this part is clear.
+
+So the function function to train model this python function gives for outputs the train accuracy, the test accuracy, the losses and the network, the trained network.
+
+So if we only if we don't care about these other outputs and we only want this output, then we can write square brackets, one square brackets.
+
+So this is going to index only the first element or the second element corresponding to index one of the output of this function.
+
+So if I write this and that's only going to return test and not the other three outputs.
+
+Furthermore, if we only care about one element inside testAcc then we can also index this, which is the test accuracy.
+
+We can index minus one, which is going to give us the final element like like this basically done here.
+
+OK, so that is how I set up the code here to make it very compact so I can create and train the model and immediately grab the final output and put it into this vector.
+
+So this is going to run ten times for each of these two models.
+
+It takes I think it was actually closer to two and a half minutes, but it does take a little while.
+
+And then when I'm going to do here is concatenate these to accuracies for the two dimensional model and the three dimensional model.
+
+This is just going to print out the raw numbers.
+
+Here I am using the scipy stats module to get a t-test.
+
+![](.md/README3.md/2023-07-23-11-13-10.png)
+
+This is an independent T test and we're going to run a t-test on these two sets of performances.
+
+And the idea is that if the T value is large and the P value is small, in particular less than point zero five, then we say that there is a statistically significant difference between the performance of these two models and that in turn, if we get a significant result here that would tell us that the model has significantly higher accuracy when it had three features compared to two features.
+
+And if the P value is larger than zero point zero five, then we would say that the model performance is is statistically equivalent or indistinguishable between these two different sets of numbers, which corresponds to the two different ways of setting up the data.
+
+And then in that case, if it's non significant, you generally prefer the simpler model over the more complicated model.
+
+So here we see all of the final accuracies.
+
+![](.md/README3.md/2023-07-23-11-14-07.png)
+
+You can see there's some variability, sometimes a model in general, the model is a little bit over 80 percent, but sometimes it just didn't do well for some reason, you know.
+
+Sixty five percent, that's not very good.
+
+And here's 70 percent.
+
+Not also not very good.
+
+OK, then we do a test and we find that the T value is small, it's close to zero, the P value is large,
+
+it is larger than zero point zero five.
+
+So we conclude that there is no statistically significant difference between these two data architectures,
+
+which means that we should prefer the simpler model, which means that the data augmentation did not actually help the model classify the qwerties in this specific example.
+
+#### Discussion
+
+![](.md/README3.md/2023-07-23-11-18-00.png)
+
+So a few points of discussion, data augmentation by adding new features in general can be a useful method for increasing the discriminant ability of different categories of data.
+
+Now, this is a general statement.
+
+It works sometimes.
+
+It is not always guaranteed to work.
+
+In general, there is no advantage of adding a new feature that is a purely linear combination of existing features.
+
+Why is that the case?
+
+Why is there no advantage of a new feature being a linear combination of existing features?
+
+Well, the answer to that is because even at the very first level, even right at the input layer of the model, we are already taking weighted combinations.
+
+So any linear weighted combination that you create and add to the data is simply something that the model could learn on its own trivially without you actually adding any new features.
+
+Now, that said, so, nonlinear combinations in general are better, but they are not guaranteed to improve performance because, of course, the model also has nonlinearities, in particular the activation functions between all of the layers.
+
+So if you add nonlinear combinations of features to the data that has a chance of improving overall model performance, but it certainly doesn't guarantee that the model performance is going to be improved because the model could be learning on its own exactly the nonlinear combination that you created.
+
+This kind of feature augmentation is pretty commonly used in signal processing.
+
+If you are familiar with signal processing, then adding data features like the power spectrum from the fourier transform or an energy from an RMS signal or some kind of phase dynamics or synchronization or coherence.
+
+There's there's many nonlinear features that can be extracted from time series, signals that are often used to augment the data.
+
+Now, we also saw that in this example with the qwerties data is that it didn't really help at all.
+
+Actually, the data augmentation was interesting to think about.
+
+It was a nice thought experiment, but it really didn't help performance at all.
+
+Now, it's possible that performance was already at ceiling.
+
+And so the network was basically already doing as well as it could.
+
+And it's also possible that the network learned to compute distance on its own, even though we added it to the data set like what I mentioned here.
+
+So I hope you enjoyed this video.
+
+Do we discussed two things.
+
+One is how to create new features of data as combinations of existing features.
+
+And I also showed you how to perform a t-test on experimental results to determine whether two different model architectures or two different data architectures are statistically significantly different.
