@@ -24,6 +24,7 @@
     - [Data feature augmentation](#data-feature-augmentation)
       - [Qwerties and distance to the origin](#qwerties-and-distance-to-the-origin)
       - [Discussion](#discussion)
+    - [Getting data into colab](#getting-data-into-colab)
 
 ## More on data
 
@@ -2704,3 +2705,160 @@ Do we discussed two things.
 One is how to create new features of data as combinations of existing features.
 
 And I also showed you how to perform a t-test on experimental results to determine whether two different model architectures or two different data architectures are statistically significantly different.
+
+### Getting data into colab
+
+> - Four methods for getting data into your google-colab environment
+
+There are several ways to get data from online or on your computer onto the Google CoLab working environment,
+
+and in this video, I'm going to walk you through a few of those different ways.
+
+[DUDL_data_data2colab.ipynb](../data/DUDL_data_data2colab.ipynb)
+
+![](.md/README3.md/2023-07-23-11-22-42.png)
+
+If you are working with images and doing image processing and convolutional neural networks, you will definitely take advantage of PyTorch's torch vision module, which comes with several data sets,
+
+one of which is called CIFAR10. The ten is for a number of categories.
+
+We are going to be working with this dataset and other data sets available through torch vision later on in the course in the section on CNN.
+
+But here, I just want to give you a little bit of a preview for downloading and using these data sets.
+
+So we see this is the root directory.
+
+I'll show you this in a moment.
+
+And here are right.
+
+Download equals true.
+
+I'm going to run this code and you can see it's going to start downloading the data.
+
+Now, keep in mind, this is not actually downloading the data onto your local computer.
+
+This file is not in my local drive.
+
+Instead, this is on the cloud server on Google's cloud where I'm accessing CoLab.
+
+So we can look inside here.
+
+You see this little menu bar off the left and you click on the file button.
+
+Now, this sample data thing is always here.
+
+In fact, this is where we get the MNIST data set from.
+
+But this is new.
+
+This folder is new.
+
+![](.md/README3.md/2023-07-23-11-24-10.png)
+
+It's called cifar10, because that's what I called it here.
+
+And you can see it has a zip file and a bunch of of other files in here.
+
+This contains all of the data, the images.
+
+It is fifty thousand images.
+
+And as I mentioned, we're going to be working with this particular data set and others later.
+
+But for now, the main point is just to introduce you to the idea of downloading data through libraries, through packages, either PyTorch or other packages.
+
+If you are curious, you don't need to do that for for certainly not for this video.
+
+If you're curious, you can go to this website and check out the other datasets that come with torch vision.
+
+OK, then we can also download data directly from the Web using pendas, for example.
+
+![](.md/README3.md/2023-07-23-11-24-56.png)
+
+So in this case, I'm downloading a data set that is this is called state marriage rates.
+
+And you can see that the URL, the website is directly this Excel document.
+
+So we just import it directly into Pandas.
+
+And here we see the big data table.
+
+This is these are marriage rates for different states in the United States for different years.
+
+So it's kind of an interesting data set.
+
+Not going to work with this right now.
+
+But just to illustrate how easy it is to import a relatively small data set from online from any website like this, obviously, if this is a different kind of file, then you might need to do a little bit more finagling.
+
+You might need to write some additional code to format and process the file, but at least it's pretty straightforward to import it.
+
+OK, there's another method.
+
+![](.md/README3.md/2023-07-23-11-25-49.png)
+
+If you have data on your hard drive, you have the data stored as a local copy and you want to import the data.
+
+So actually upload the data onto the cloud space that you have available to you.
+
+
+Then you can use from Google DOT CoLab import files and then upload.
+
+It equals files that upload or any you know, you can replace this with anything else here.
+
+So I'll run this and then I can click a click here to choose a file to upload.
+
+And here I'll just pick a picture that we have here.
+
+And you can see that this file was uploaded and we don't immediately see it here.
+
+But if you click refresh, then you'll see that picture is is there.
+
+So obviously this is just one picture.
+
+But, you know, you could upload a whole dataset.
+
+Keep in mind that if you were uploading a data file from your local computer, if it's a large data file or if you have many, many files, this could be rather slow.
+
+So this is not really scalable.
+
+It's probably not going to be a good idea to try to upload 30 gigabytes of data from your local hard drive onto here just using this method.
+
+This is not necessarily terribly fast.
+
+A slightly better method would be if you have data stored on your local computer or on your Google Drive or if not on your Google Drive, you could push it onto your Google Drive and then you can actually mount your Google Drive here again from Google CoLab Import Drive.
+
+And then we might drive that mount.
+
+![](.md/README3.md/2023-07-23-11-27-22.png)
+
+And this is going to be the location where it gets mounted onto where we're going to see our Google Drive.
+
+Now, by default, Google CoLab cannot directly access your Google Drive.
+
+You need to give it permission to do that.
+
+So the way this works is you can see this message.
+
+It says go to this URL in your browser and then it's asking for an authorization code.
+
+So we go here, click on this link, and now we are going to need to log in with Google.
+
+And that's to confirm that we can we give Google CoLab permission to access our Google drive
+
+So I'm going to click on Allow here and then here is the authorization code, so we copy this from here,
+
+go back here and paste that in here, press enter.
+
+And now we get the message that says mounted at / content / gdrive.
+
+So now we see here and now I have access to my full Google Drive.
+
+So anything any data or any files that are on my Google Drive, including Jupiter notebook files that you could open directly in here, these are all going to be accessible through this link over here.
+
+Very nice.
+
+So now I've shown you a few different ways of getting data into your CoLab environment, you will see
+
+many more examples of importing data as you continue throughout the rest of this course.
