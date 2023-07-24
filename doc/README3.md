@@ -25,6 +25,12 @@
       - [Qwerties and distance to the origin](#qwerties-and-distance-to-the-origin)
       - [Discussion](#discussion)
     - [Getting data into colab](#getting-data-into-colab)
+    - [Save and load trained models](#save-and-load-trained-models)
+    - [Save the best-performing model](#save-the-best-performing-model)
+      - [Why save the best model?](#why-save-the-best-model)
+      - [Overfitting and the cross-validation cycle](#overfitting-and-the-cross-validation-cycle)
+    - [Where to find online dataset](#where-to-find-online-dataset)
+      - [Online datasets](#online-datasets)
 
 ## More on data
 
@@ -1908,7 +1914,7 @@ In other words, there are going to be some data samples where there are there's,
 
 And one twin is in the training set and the other twin is in the devset.
 
-So to the extent that the model was simply memorizing individual data samples, the model could also leverage that in the deficit.
+So to the extent that the model was simply memorizing individual data samples, the model could also leverage that in the devset.
 
 So this is actually not a really great test set not that I'm being too nice there.
 
@@ -2197,7 +2203,7 @@ So here in this case, it looks like we have kind of like the average of those tw
 
 So it's higher than the devset.
 
-The accuracy is higher than the deficit for the unique value data sets, but it's not quite up to 100 percent accuracy.
+The accuracy is higher than the devset for the unique value data sets, but it's not quite up to 100 percent accuracy.
 
 I encourage you after this video, I encourage you to go back to the function that creates the data sets and swap the commented and uncommented lines, as we discussed before.
 
@@ -2862,3 +2868,653 @@ Very nice.
 So now I've shown you a few different ways of getting data into your CoLab environment, you will see
 
 many more examples of importing data as you continue throughout the rest of this course.
+
+### Save and load trained models
+
+> - How to save your trained models
+> - How to import trained models so you don't need to start from scratch each time!
+
+So far in this course, all of the models that we have worked with, we train them from scratch.
+
+So we started off with a blank template model.
+
+We randomly initialize the weights and we train the model from scratch.
+
+Now, that's great for educational purposes, for the for learning, for taking a course.
+
+But in the future, you're going to need to share a pre trained model.
+
+So a model that's already gone through all of the training so that people that you share the model with
+
+don't need to go through all the training.
+
+And that is what I'm going to show you how to do in this video.
+
+[DUDL_data_saveLoadModels.ipynb](../data/DUDL_data_saveLoadModels.ipynb)
+
+We're going to start by just building a model from scratch and train it on the MNIST data set.
+
+Now, I'm going to go through a lot of this code pretty quickly because this is nothing new, importing the data, creating the data loaders and so on.
+
+The model, the function that trains the model, actually training the model and showing the performance of the model.
+
+This is all old news.
+
+Basically I just want to show you how we can create a model from scratch, build it up, train the model to a decent level of accuracy.
+
+Let's see what we got here.
+
+We get no, it's actually a little lower than what we normally get with this architecture and this amount of data.
+
+But whatever you're going to leave it like this for now, because that is not the point of this video.
+
+The point of this video is basically this line and the next couple of lines.
+
+![](.md/README3.md/2023-07-24-21-51-52.png)
+
+So what I'm doing here is using a function in PyTorch called Save, so Torch.save.
+
+And here's what I'm saving net dot state_dict.
+
+So Net is the name of the network that I created that you see here.
+
+So I created a fresh instance of the model and I train that model on the data, the MNIST data,
+
+and then the variable net is the trained model which gave us 90 percent accuracy.
+
+OK, so net dot here's a new method which you haven't seen before.
+
+State dot dict or state underscore dict.
+
+This is a dictionary of the current state of the model and that state includes all of the important variables, like all the weights and the bias's, everything about the model that we have trained that someone else would need.
+
+And then I'm saving this as a file trained model.
+
+So let's run this line of code and now we can look in our files here and we see this file here.
+
+So you can actually download this if you want this would you could download this and then share it with someone else.
+
+And to show you that this really works, what I'm going to do is create two brand new model instances.
+
+![](.md/README3.md/2023-07-24-21-53-34.png)
+
+So I'm calling this function, create the MNISTNet.
+
+And now I'm calling these models model one and model two.
+
+Now, these models are not trained that I'm not even going to train them.
+
+These are new random models with random initialized weights.
+
+And then what I do here is use another method on model one called load_state_dict.
+
+And then you can see here I'm using torched load trained model dot pt.
+
+So what we are doing here is saving the model state into this file and then importing that file and mapping the state of that train's network onto this new network.
+
+Maybe we can call this like a naive network.
+
+It's a fresh network that has never been trained.
+
+OK, so run that code.
+
+And then while we get a nice little happy message here, saying all of the keys in this dictionary were matched successfully.
+
+So that just means that the the mapping was successful.
+
+![](.md/README3.md/2023-07-24-21-55-20.png)
+
+Now, here's what we're going to do is show that the two models are the same and also that model two is different.
+
+So here I just grab a little bit of data from the test loader, run the data through the train network.
+
+Right.
+
+This is the train network and these are the two untrained fresh networks.
+
+Now, this is the one that I have mapped onto and this model I haven't done anything with.
+
+So run exactly the same data through.
+
+And then we get the predictions from the model here.
+
+And then I'm going to make a plot of them for Image Image with Index five.
+
+So it's this number five here is is pretty random, but I'm sorry I said that wrong.
+
+This is not the stimulus.
+
+Fifth stimulus.
+
+This is actually the output node.
+
+No index five.
+
+So the sixth node or unit in the output layer.
+
+![](.md/README3.md/2023-07-24-21-56-20.png)
+
+So these are the log probabilities that are outputted by that particular node.
+
+So you can see that the blue line and the red dots overlap perfectly.
+
+And then we have these purple Xs over here which aren't doing anything.
+
+There's no dynamics.
+
+So what is going on here?
+
+Well, the blue line is the original.
+
+That's from the trained network, which we just trained in the code above.
+
+And then the red dots correspond to model one.
+
+And that is the model that I created totally from scratch.
+
+But then I mapped onto it the parameters from the trained model.
+
+And then model two is the other model that I created from scratch without doing anything, without mapping any values.
+
+Now that model just gives a constant value, which is exactly the same value for every stimulus.
+
+And that's not so surprising because this model has not been trained.
+
+It's never been trained, it's never gone through back propagation.
+
+So it has no preference.
+
+Says every every know, every MNIST sample looks the same basically to this model, it's just noise.
+
+OK, but the main point here is to confirm visually that the red dots and the blue line overlap, which
+
+means that we have perfectly gotten exactly the same results from net and model one.
+
+And the reason why these two models give exactly the same results is because all of the model parameters, all the weights and the biases have been mapped from net onto model one.
+
+### Save the best-performing model
+
+> - How to record the best of the models you created and trained.
+> - How to avoid overfitting when saving the best devset model.
+
+The purpose of this video is to teach you how to save the best performing model out of the models that you train on a data set.
+
+Now, this entails a little bit of overfitting.
+
+So we're going to come back to this discussion.
+
+And in practice in Python, we're going to have to separate the devset from a test set.
+
+#### Why save the best model?
+
+![](.md/README3.md/2023-07-24-22-00-59.png)
+
+Now, when you train a model, you create a fresh model instance with randomized weights.
+
+And over the course of learning, as you go through the training epochs, the model, of course, is improving.
+
+It's getting better and better.
+
+So that part is kind of trivial.
+
+Later, models will generally perform better than earlier models.
+
+But it is not trivially the case that every model outperforms the previous model.
+
+So you often seen accuracy trajectories that look something like this where they generally go up as a function of training.
+
+But some instances, some training epochs are actually more accurate than other training epochs.
+
+By the way, it's a little bit debatable.
+
+It's a bit of a semantic issue of whether all of these points here represent really different models.
+
+It all comes from the same model architecture that we create an instance of a model, but then at each epoch with each time that we call back propagation and we adjust the weights, in some sense the model is different because all of the trainable parameters are different.
+
+All of the weights are different, the biases are different.
+
+So there is an interpretation where each epoch actually produces a different model because the parameters differ.
+
+OK, but anyway, the point was that the later models are performed better than earlier models, but it's certainly not guaranteed that the final model, the very last epoch you train is going to be the best.
+
+So what we are going to do in this video is track the performance of the model over time, over training, and then we're going to save the model state.
+
+So all the weights and all of the biases from the best performing model.
+
+In this particular case, that would be this model here.
+
+Of course, it's towards the end, but it is certainly not the final model.
+
+So on the devset, this model here at epoch, you know, 93 or whatever this is outperformed the model at training epoch 100.
+
+So we want to save this.
+
+Now notice that this is Overfitting.
+
+This is Researcher Overfitting because we are looking at the collection of models, all the parameters that we have settled on and picking the one model that performed the best.
+
+So that just means that it performed the best on the devset, which does not mean that is necessarily going to perform best on the test set or on, you know, independent data set in the future.
+
+#### Overfitting and the cross-validation cycle
+
+![](.md/README3.md/2023-07-24-22-05-17.png)
+
+So just to make sure that's clear, we are here in this space here.
+
+So we are training the model on the training data, evaluating it on the test set here this is Model Overfitting and this part here is researcher Overfitting because we are selecting the model that performs best on the devset from this cycle here, from this loop here.
+
+So this is the reason why after we go through all of our training, if we don't take the final model and instead we just pick the best performing model on the devset, that is overfitting.
+
+So therefore, we need to evaluate the performance of that particular model on the test, that otherwise it's possible that we are just, you know, by chance overfitting on the devset.
+
+OK, so let's switch to Python.
+
+We're going to work with the three categories, qwerties dataset.
+
+So there's going to be a lot of pieces of the code that you've seen before when we go through those rather quickly.
+
+And I will spend more time focusing on the new bits of code.
+
+[DUDL_data_saveTheBest.ipynb](../data/DUDL_data_saveTheBest.ipynb)
+
+So import the libraries and before we get to anything deep learning related, I want to give you a bit of an overview, a simplified overview of what the code is going to look like for how we are going to identify and store the best fitting model.
+
+![](.md/README3.md/2023-07-24-22-06-10.png)
+
+So imagine that this code is part of our deep learning training code.
+
+So here is a for loop, and this is just looping over 10 numbers.
+
+But you can imagine that this is going to be the loop over the training epochs.
+
+Now, here is where we would be training the model.
+
+So running through mini batches, doing forward propagation, computing the losses and initializing back propagation and computing the accuracy on the devset.
+
+And that is what this variable is supposed to represent.
+
+Now, obviously, this is not actual accuracy.
+
+This is just some random number between zero and one.
+
+But this is going you know, this is simulated accuracy.
+
+Here is the important bit of code.
+
+![](.md/README3.md/2023-07-24-22-07-18.png)
+
+So I say if the accuracy from this training epoch is larger than the current best accuracy, which is here, you can see it is just initialized as a list, running a dictionary later.
+
+But it's OK.
+
+We use a list here.
+
+So if the accuracy on this training epoch is better than the best accuracy, then we store the accuracy and the epoch at which that accuracy occurred.
+
+OK, so now I'm going to run this code and we see that the highest accuracy it's an apology quotes because of course it's just a random number was quite high.
+
+![](.md/README3.md/2023-07-24-22-08-11.png)
+
+It's really exceptionally high actually, considering these are just a couple of random numbers.
+
+But this occurred in run seven, so it didn't necessarily occur at the final stage of training.
+
+Now, of course, this is pretty random as well where exactly this random number is going to come from.
+
+OK, but this is the general idea.
+
+So you're going to see lines of code that look something like this in the training code later on here.
+
+I create the data.
+
+This is nothing new.
+
+So I'll skip over this.
+
+There was a couple of things I just want to mention quickly here.
+
+![](.md/README3.md/2023-07-24-22-09-03.png)
+
+I have told you before that this scikit learn function, train test split can take a number of different kinds of optional inputs.
+
+Usually I specify the training size to be a fraction between zero and one, which is the proportion of data that goes into the training set or alternatively the test set, if that's what you define here.
+
+But I've also mentioned previously that you can also input a integer here and then it's not the proportion, but instead the actual number of data observations.
+
+And so here I specify that the training set is going to be, however, many total observations are minus 400.
+
+And then I'm going to have two hundred devset samples and two hundred test set samples.
+
+OK, so here in this line of code, we split the data into training and another partition, which is the devset and the test set.
+
+And then here I'm segregating the dev test set into an actual dev set and a test to set so we can run this code here and see that there's 900 samples in total, 500 of which go into the training and two hundred and two hundred for devset and test.
+
+![](.md/README3.md/2023-07-24-22-11-40.png)
+
+Now, this code you've seen before, I do, however, want to mention something which is a possible error that you can get in Python.
+
+So this is a risk of reusing the same variable names.
+
+So here I specify that these variables were called train data and and test data and dev data.
+
+![](.md/README3.md/2023-07-24-22-12-10.png)
+
+Now, here, I input that into this function.
+
+Tensor data set, which creates a towards data set and the output is exactly the same variable name.
+
+Now this is not the same variable because the actual the data, the information that's that's contained inside this variable is different from what's inside this variable.
+
+![](.md/README3.md/2023-07-24-22-12-47.png)
+
+But the the variable name is exactly the same.
+
+So let me show you the risk of overwriting variables like this or overriding variable names.
+
+So I'm going to run this cell and it's fine.
+
+Don't get any errors.
+
+It ran fine.
+
+Now I'm going to run this cell again.
+
+And I know how he got an error.
+
+![](.md/README3.md/2023-07-24-22-13-19.png)
+
+And it's just sort of a weird error message.
+
+The actual problem here is that we've already created a tensor data set and now we are trying to create a tensor data set out of a tensor data set.
+
+But this is not the appropriate input into the tensor data set function, and that's why we get this error.
+
+And the problem is overwriting the variable names.
+
+Now, you could argue and I typically do argue that.
+
+This is bad programming, and it would be much better to have unique variable names for all of the unique variables.
+
+So, yeah, I don't have any good excuses here.
+
+It's just it is the way it is.
+
+OK, so the only solution when you run into a problem like this, the only solution is to recreate this variable in its previous instance.
+
+Fortunately, in this case, that is not a big deal.
+
+I just have to rerun this code, sell here, and then I rerun this code sell and now we don't see any errors.
+
+OK, very nice.
+
+Here we create the model.
+
+There's nothing new in here.
+
+here is some new stuff in here.
+
+![](.md/README3.md/2023-07-24-22-14-33.png)
+
+So here is the function that trains the model.
+
+So now you can see I'm creating a dictionary with two keys.
+
+Accuracy and netzfor network accuracy is initialized to zero and that is what is just initialized to empty.
+
+So this is just an empty placeholder here.
+
+So then what becomes of this dictionary here?
+
+So we scroll down.
+
+This is all normal stuff here.
+
+![](.md/README3.md/2023-07-24-22-15-09.png)
+
+We have the loop overtraining apoc.
+
+This is as I mentioned earlier.
+
+So then we loop over the mini batches.
+
+We do forward pass, compute the loss and do back propagation and then we compute the accuracy for the batch here.
+
+We get the accuracy for this training loop, which is the average over all of the batch, the accuracies for each individual mini batch.
+
+OK, and then we test the model performance.
+
+Now, this is the important thing here.
+
+We get the devset accuracy and here is the code that is similar to the code we looked at in the beginning when we first switched to Python.
+
+![](.md/README3.md/2023-07-24-22-16-24.png)
+
+So here I write if devAcc minus one.
+
+So this means the very last element of devAcc, which means the current accuracy or the accuracy on the current training epoch.
+
+If this is greater, if this is larger than the current best model accuracy, then we replace the accuracy and we replace the value for this key net with a copy of the network's current state.
+
+So this code should now look familiar from the previous video on saving the network state all the weights and the biases and so on.
+
+OK, so that's the only new code.
+
+Otherwise the rest of this is is pretty straightforward and then also exporting this dictionary here.
+
+So now we can run this model and look at the performance.
+
+So I'm actually not super interested in this except to see this is actually perfect.
+
+![](.md/README3.md/2023-07-24-22-18-17.png)
+
+Let me see.
+
+I want to zoom in here, so I'll write X one that sets Y lim.
+
+Let's do like eighty five to ninety five and maybe I'll also zoom in on the x axis. So I set the x axis limit to go from.
+
+I just want to zoom in to this little area over here.
+
+Let's zoom in to like about 80 to 105, something like that.
+
+Eighty to one of five.
+
+OK, so this is just zooming in to the very end of learning.
+
+![](.md/README3.md/2023-07-24-23-40-54.png)
+
+And here you see exactly what I was talking about.
+
+![](.md/README3.md/2023-07-24-23-42-47.png)
+
+So the final model is actually not the best performing model on the devset actually does do well in the training set.
+
+But we were evaluating or picking the best model based on devset performance.
+
+So this is actually this model here is outperforming this model.
+
+OK, so let's have a look at this dictionary.
+
+![](.md/README3.md/2023-07-24-23-43-29.png)
+
+This tells us that the accuracy was 92 percent.
+
+So this is the best possible accuracy from the entire training, from all the epochs of training.
+
+And then here we have all of the information about the network.
+
+These are all the weights and the biases and so on.
+
+So in this so we are extracting data from the test loader.
+
+![](.md/README3.md/2023-07-24-23-44-05.png)
+
+So this is the real test.
+
+The model has never seen these data before during training.
+
+And now you might think that this would be the right thing to do to say the best model net.
+
+So this is going to give us the saved model state and then input our data X into this variable here.
+
+But unfortunately, it's not quite that simple.
+
+It would be nice.
+
+I think, you know, PyTorch would be a little bit nicer to us if things are a little bit simpler.
+
+But that's not the way that it works.
+
+So we have to do instead is actually let me comment this and then run this, make sure we get the data here.
+
+So we have to do instead is create a fresh model instance and then map the safety parameters onto that fresh model instance.
+
+![](.md/README3.md/2023-07-24-23-45-12.png)
+
+And that's what I do in this code here.
+
+And this is stuff you've seen before in the previous video.
+
+So now we can run our.our data, our test data through the best network, I guess I don't need this line, we already run it and then we can see that the accuracy is 94 percent.
+
+![](.md/README3.md/2023-07-24-23-46-36.png)
+
+That's actually really great because the accuracy on the devset set was 92 percent.
+
+So, in fact, we are even doing a little bit better on the test data compared to the devset.
+
+And we can also visualize that here.
+
+![](.md/README3.md/2023-07-24-23-47-06.png)
+
+Here we have you know, this is train and test accuracy.
+
+It's exactly the same data that I showed earlier.
+
+Also zoomed in, just zoomed in to different limits.
+
+And then this red line here shows the model performance on the test data.
+
+Again, you know, I think we got a little bit lucky here in this case that the that the test performance ended up being not only better than the devset, but also but basically just as good as the training set.
+
+Now, what's great is that this is not overfitting here.
+
+So we are not overfitting this model here because this is model of model being evaluated on data it's never seen before.
+
+So that's concludes this video again, the main point was to show you how to store the model, state all the weights and all the parameters, the learn parameters, and map that back onto a fresh model instance to recreate the exact model that you have trained.
+
+### Where to find online dataset
+
+> - A few popluar websites for getting data to practice your DL skills
+
+I have said several times before that deep learning is very much an empirical science, which means that the only way to get better at deep learning is to do a lot of deep learning is to practice with many different models, many different data sets and so on.
+
+I have tried in this course to give a bit of variety about model architectures and data sets.
+
+And of course, you're going to see more variety as we go throughout the course.
+
+But you would also be a little tedious and I think just not really the best use, of course, time just to, you know, go through a million different models in a million different data sets if the concepts aren't changing.
+
+That said, it's a great idea for you to go through more practice, more data sets, look at other people's code in particular on topics that you find interesting.
+
+And so what I'm going to do in this video is show you a couple of websites.
+
+Well, I'm really going to just walk through one website for getting data for machine learning and in particular for deep learning.
+
+#### Online datasets
+
+![](.md/README3.md/2023-07-24-23-52-52.png)
+
+So the main website where people get data from is called kaggle.com.
+
+And I'm going to switch to a browser in a moment and show you what kaggle dot com looks like.
+
+I'll show you briefly how to navigate that website.
+
+kaggle is not the only website for data sets and code competitions for machine learning and deep learning, but it really is the main one.
+
+It's currently the most popular one.
+
+And also you can find other ones by just doing a Google search for websites like Kaggle and then you'll find other websites.
+
+And in fact, I've already shown you the UCI, the University of California at Irvine website, where we downloaded some data.
+
+Now Kaggle, Dotcom and some of these other websites that are like Google is, it has a big focus on competition, but you do not need to compete in order to download the data and in order to look at other people's code solutions.
+
+So if you're not particularly competitive or if you don't feel like putting yourself out there, it's totally fine.
+
+You do not need to compete to take advantage of the resources available at Kaggle Dotcom.
+
+So what you should do on Kaggle Dotcom is download data and look at other people's solutions.
+
+So here is what Kaggle Dotcom looks like.
+
+So this is the main page when you go to Kaggle Dotcom and you see there's competitions, data sets, code and a forum for discussions, also links to other courses.
+
+So we can just have a look through the data sets and you can see there's lots and lots so we can search for particular data sets we might be interested in or you can just browse through.
+
+These are the trending data sets.
+
+There's a lot of real world data sets like this is some clinical data sets.
+
+This one looks pretty interesting.
+
+See if you can predict the happiness of a lot of people in a country depending on certain factors.
+
+This one's pretty interesting vaccine myths on Reddit, all sorts of interesting data sets.
+
+Someone uploaded a bunch of Pokémon statistics, data sets, there's some biology and so on, or you
+
+search for things that we have previously, for example, worked with that wine data set and so on.
+
+In fact, it's also listed right here.
+
+This is these ones here.
+
+This is the UCI, University of California, Irvine Machine Learning website.
+
+OK, so this is for data sets and there's also competitions.
+
+This one is also interesting.
+
+Again, you do not need to host or participate in a competition in order to take advantage of these competitions.
+
+So you can just find one that you think is interesting, like this one study breakthrough, the search for extraterrestrial life.
+
+So there's going to be a little bit of a description about this data set and the competition.
+
+You can download the data now.
+
+In general, you have to be you have to be a member of Kaggle, so you need to register.
+
+It's free.
+
+You don't have to pay money to register, but you do need to give them a name and an email address in order to be able to access the data.
+
+You can look up code.
+
+This is sometimes this is code for just getting started.
+
+Sometimes this is code that other people have submitted.
+
+So you can actually just look through other people's code.
+
+Maybe I should find another one.
+
+Let me search for PyTorch and we'll get some code that's maybe a little bit more relevant for you given this course.
+
+OK, so here's a notebook on PyTorch tutorial for Deep Learning Lovers'.
+
+That's definitely what you are.
+
+So some some nice comments here and yeah, lots of lots of things.
+
+So you can just copy these line by line or you can look through them on the web or you can download this notebook file.
+
+So Kaggle is a really great resource.
+
+If you're not already familiar with it.
+
+I definitely recommend to take a few moments and just browse through the website and get a feel for what resources are available through this website.
+
+Finally, if there is a specific data set or a specific kind of data set, a specific topic that you were looking for, just try searching for it in Google or Bing or Yahoo or whatever your preferred search engine is, there is an ever increasing amount of data out there in the world on the Web, and a lot of it is available for you if you just know where to look.
